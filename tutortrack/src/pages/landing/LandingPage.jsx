@@ -3,6 +3,7 @@ import {
   BookOpen,
   CalendarDays,
   CheckCircle2,
+  ClipboardCheck,
   GraduationCap,
   Mail,
   Menu,
@@ -10,8 +11,10 @@ import {
   Moon,
   Sun,
   Users,
+  X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { useTheme } from "../../hooks/useTheme.js";
 
 const problems = [
@@ -80,6 +83,12 @@ const roles = [
   },
 ];
 
+const workflow = [
+  { number: "01", icon: CalendarDays, title: "Plan the week", copy: "Book one-off or recurring sessions, then keep attendance in the same place." },
+  { number: "02", icon: ClipboardCheck, title: "Keep work moving", copy: "Assign practice, collect submissions, and keep grading from becoming a backlog." },
+  { number: "03", icon: MessageCircle, title: "Share the signal", copy: "Parents see progress, payments, and the next step without another status chase." },
+];
+
 export default function LandingPage() {
   const { dark, toggleTheme } = useTheme();
 
@@ -88,6 +97,7 @@ export default function LandingPage() {
       <LandingHeader dark={dark} onToggleTheme={toggleTheme} />
       <Hero />
       <ProblemSection />
+      <WorkflowSection />
       <RolePreviewSection />
       <LandingFooter />
     </main>
@@ -95,6 +105,8 @@ export default function LandingPage() {
 }
 
 function LandingHeader({ dark, onToggleTheme }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <header className="relative z-10 border-b border-slate-200/80 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-[var(--color-dark-surface)]/80">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -104,9 +116,11 @@ function LandingHeader({ dark, onToggleTheme }) {
           </span>
           TutorTrack
         </Link>
-        <nav className="hidden items-center gap-6 text-sm font-semibold text-slate-500 md:flex dark:text-slate-300">
-          <a href="#why">Why TutorTrack</a>
-          <a href="#action">See it in action</a>
+        <nav className="hidden items-center gap-5 text-sm font-semibold text-slate-500 md:flex dark:text-slate-300">
+          <a href="#why">The problem</a>
+          <a href="#workflow">How it works</a>
+          <a href="#action">Role views</a>
+          <Link to="/tutor">Tutor space</Link>
         </nav>
         <div className="flex items-center gap-2">
           <button
@@ -125,11 +139,37 @@ function LandingHeader({ dark, onToggleTheme }) {
             Sign in
           </Link>
           <Link to="/signup" className="hidden rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-bold text-white sm:inline-flex">Get started</Link>
-          <Menu className="text-slate-400 sm:hidden" size={20} aria-hidden="true" />
+          <button
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-label="Toggle navigation"
+            aria-expanded={menuOpen}
+            className="grid h-9 w-9 place-items-center rounded-xl border border-slate-200 text-slate-500 sm:hidden dark:border-slate-700 dark:text-slate-300"
+          >
+            {menuOpen ? <X size={19} /> : <Menu size={19} />}
+          </button>
         </div>
       </div>
+      {menuOpen && (
+        <nav className="border-t border-slate-200 bg-white px-4 py-3 sm:hidden dark:border-slate-800 dark:bg-[var(--color-dark-surface)]">
+          <div className="mx-auto grid max-w-7xl gap-1 text-sm font-semibold text-slate-600 dark:text-slate-300">
+            <MobileNavLink href="#why" onClick={() => setMenuOpen(false)}>The problem</MobileNavLink>
+            <MobileNavLink href="#workflow" onClick={() => setMenuOpen(false)}>How it works</MobileNavLink>
+            <MobileNavLink href="#action" onClick={() => setMenuOpen(false)}>Role views</MobileNavLink>
+            <Link to="/tutor" onClick={() => setMenuOpen(false)} className="rounded-xl px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800">Tutor space</Link>
+            <div className="mt-2 grid grid-cols-2 gap-2 border-t border-slate-200 pt-3 dark:border-slate-800">
+              <Link to="/signin" onClick={() => setMenuOpen(false)} className="rounded-xl border border-slate-200 px-3 py-2.5 text-center dark:border-slate-700">Sign in</Link>
+              <Link to="/signup" onClick={() => setMenuOpen(false)} className="rounded-xl bg-emerald-500 px-3 py-2.5 text-center text-white">Get started</Link>
+            </div>
+          </div>
+        </nav>
+      )}
     </header>
   );
+}
+
+function MobileNavLink({ href, onClick, children }) {
+  return <a href={href} onClick={onClick} className="rounded-xl px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800">{children}</a>;
 }
 
 function Hero() {
@@ -243,6 +283,32 @@ function ProblemSection() {
           </article>
         ))}
       </div>
+      </div>
+    </section>
+  );
+}
+
+function WorkflowSection() {
+  return (
+    <section id="workflow" className="border-y border-slate-200/80 bg-[var(--color-brand-navy)] text-white dark:border-slate-800">
+      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
+        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+          <div className="max-w-2xl">
+            <p className="text-sm font-bold uppercase tracking-[.16em] text-emerald-300">The TutorTrack loop</p>
+            <h2 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">From a session plan to visible progress.</h2>
+          </div>
+          <p className="max-w-sm text-sm leading-6 text-slate-300">Every part of the weekly tutoring rhythm has a place, so the next action is easy to find.</p>
+        </div>
+        <div className="mt-12 grid gap-8 md:grid-cols-3">
+          {workflow.map(({ number, icon: Icon, title, copy }, index) => (
+            <article key={number} className="relative border-t border-white/20 pt-5">
+              <div className="flex items-center justify-between"><span className="text-sm font-extrabold text-emerald-300">{number}</span><Icon className="text-emerald-300" size={21} /></div>
+              <h3 className="mt-8 text-xl font-extrabold">{title}</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-300">{copy}</p>
+              {index < workflow.length - 1 && <ArrowRight className="absolute -right-5 top-5 hidden text-white/30 md:block" size={20} />}
+            </article>
+          ))}
+        </div>
       </div>
     </section>
   );
