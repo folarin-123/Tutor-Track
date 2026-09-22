@@ -1,0 +1,40 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --color-app-bg: #f7f9fc;
+  --color-dark-bg: #0b1220;
+  --color-dark-surface: #0f1b2d;
+  --color-brand-navy: #10243c;
+  font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+  color: #0f172a;
+  background: var(--color-app-bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html.dark {
+  color: #e2e8f0;
+  background: var(--color-dark-bg);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: inherit;
+}
+
+:where(button, a, input, textarea, select):focus-visible {
+  outline: 3px solid rgb(16 185 129 / 45%);
+  outline-offset: 2px;
+}
+
+#root {
+  min-height: 100vh;
+}
