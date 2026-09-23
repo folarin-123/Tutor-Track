@@ -7,7 +7,6 @@ import {
   ClipboardCheck,
   Plus,
   ReceiptText,
-  Send,
   Users,
 } from "lucide-react";
 import ScrollableTabs from "@/components/common/ScrollableTabs";
@@ -15,8 +14,6 @@ import {
   Avatar,
   EmptyState,
   Field,
-  formatRelativeTime,
-  MessageThread,
   Modal,
   Panel,
   PrimaryButton,
@@ -24,6 +21,7 @@ import {
   SelectField,
   Stat,
 } from "@/components/common/Primitives";
+import MessagingPanel from "@/components/messaging/MessagingPanel";
 import {
   CartesianGrid,
   Legend,
@@ -74,7 +72,7 @@ export default function TutorPage() {
     Students: <Students store={store} onAdd={() => setModal("student")} />,
     Assignments: <Assignments store={store} push={push} />,
     Payments: <Payments store={store} money={money} onReceipt={setReceipt} />,
-    Messages: <Messages store={store} push={push} sender={user?.name ?? "Tutor"} />,
+    Messages: <Messages store={store} user={user} />,
   }[tab];
 
   return (
@@ -466,136 +464,14 @@ function Payments({ store, money, onReceipt }) {
   );
 }
 
-function Messages({ store, push, sender }) {
-  const [selectedStudentId, setSelectedStudentId] = useState(null);
-  const [channel, setChannel] = useState("student");
-
-  const selectedStudent = store.students.find((s) => s.id === selectedStudentId);
-
-  if (!selectedStudent) {
-    return (
-      <div className="mt-7 rounded-3xl bg-[var(--bg-surface)] p-5 ring-1 ring-[var(--border-default)] sm:p-6">
-        <h2 className="text-base font-bold">Student Conversations</h2>
-        <p className="mt-1 text-xs text-[var(--text-secondary)]">
-          Select a student to view and send messages.
-        </p>
-        <div className="mt-4 divide-y divide-[var(--border-default)]">
-          {store.students.length === 0 ? (
-            <EmptyState
-              title="No students yet"
-              body="Add students to your roster to start messaging."
-            />
-          ) : (
-            store.students.map((student) => {
-              const studentMsgs = store.messages.filter((m) => m.studentId === student.id);
-              const lastMsg = studentMsgs[studentMsgs.length - 1];
-              return (
-                <button
-                  key={student.id}
-                  type="button"
-                  onClick={() => setSelectedStudentId(student.id)}
-                  className="flex w-full items-center gap-4 rounded-2xl p-3 text-left transition hover:bg-[var(--bg-surface-muted)]/60"
-                >
-                  <Avatar value={student.name} />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                      <p className="font-bold">{student.name}</p>
-                      {lastMsg && (
-                        <span className="text-xs text-[var(--text-secondary)]">
-                          {formatRelativeTime(lastMsg.timestamp)}
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-0.5 truncate text-sm text-[var(--text-secondary)]">
-                      {lastMsg
-                        ? `${lastMsg.from === sender ? "You: " : ""}${lastMsg.body}`
-                        : "No messages yet"}
-                    </p>
-                  </div>
-                </button>
-              );
-            })
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  const threadMessages = store.messages.filter(
-    (m) => m.studentId === selectedStudent.id && m.channel === channel,
-  );
-
-  const handleSend = (body) => {
-    store.sendMessage({
-      studentId: selectedStudent.id,
-      channel,
-      from: sender,
-      to: channel === "student" ? selectedStudent.name : "Parent",
-      body,
-    });
-    push("Message sent.");
-  };
-
+function Messages({ store, user }) {
   return (
-    <div className="mt-7">
-      <MessageThread
-        messages={threadMessages}
-        currentSender={sender}
-        onSend={handleSend}
-        placeholder={
-          channel === "student"
-            ? `Message ${selectedStudent.name}`
-            : `Message parent of ${selectedStudent.name}`
-        }
-        emptyText={
-          channel === "student"
-            ? `No messages with ${selectedStudent.name} yet.`
-            : `No messages with ${selectedStudent.name}'s parent yet.`
-        }
-        header={
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-default)] pb-4">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setSelectedStudentId(null)}
-                className="inline-flex items-center gap-1 rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-bold text-[var(--text-secondary)] transition hover:bg-[var(--bg-surface-muted)]"
-              >
-                &larr; All threads
-              </button>
-              <Avatar value={selectedStudent.name} size={34} />
-              <div>
-                <p className="text-sm font-bold leading-tight">{selectedStudent.name}</p>
-                <p className="mt-0.5 text-xs text-[var(--text-secondary)]">{selectedStudent.grade}</p>
-              </div>
-            </div>
-            <div className="inline-flex rounded-full bg-[var(--bg-surface-muted)] p-1">
-              <button
-                type="button"
-                onClick={() => setChannel("student")}
-                className={`rounded-full px-3 py-1 text-xs font-bold transition ${
-                  channel === "student"
-                    ? "bg-primary-500 text-white"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-                }`}
-              >
-                Student thread
-              </button>
-              <button
-                type="button"
-                onClick={() => setChannel("parent")}
-                className={`rounded-full px-3 py-1 text-xs font-bold transition ${
-                  channel === "parent"
-                    ? "bg-primary-500 text-white"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-                }`}
-              >
-                Parent thread
-              </button>
-            </div>
-          </div>
-        }
-      />
-    </div>
+    <MessagingPanel
+      role="tutor"
+      user={user}
+      roster={store.students}
+      onUpdateStudent={store.updateStudent}
+    />
   );
 }
 
@@ -712,10 +588,17 @@ function buildStudentAverageTrend(students, assignments) {
 function AddStudentModal({ onClose, store, push }) {
   const [name, setName] = useState("");
   const [grade, setGrade] = useState("");
+  const [uid, setUid] = useState("");
+  const [parentUid, setParentUid] = useState("");
 
   const submit = () => {
     if (!name.trim()) return;
-    store.addStudent({ name: name.trim(), grade: grade.trim() });
+    store.addStudent({
+      name: name.trim(),
+      grade: grade.trim(),
+      uid: uid.trim(),
+      parentUid: parentUid.trim(),
+    });
     push(`${name.trim()} was added to your roster.`);
     onClose();
   };
@@ -725,6 +608,18 @@ function AddStudentModal({ onClose, store, push }) {
       <div className="space-y-4">
         <Field label="Student name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" />
         <Field label="Grade or level" value={grade} onChange={(e) => setGrade(e.target.value)} placeholder="Grade 8" />
+        <Field
+          label="Student account ID (optional)"
+          value={uid}
+          onChange={(e) => setUid(e.target.value)}
+          placeholder="From the student's TutorTrack header"
+        />
+        <Field
+          label="Parent account ID (optional)"
+          value={parentUid}
+          onChange={(e) => setParentUid(e.target.value)}
+          placeholder="From the parent's TutorTrack header"
+        />
       </div>
       <PrimaryButton className="mt-5 w-full" onClick={submit}>
         Save

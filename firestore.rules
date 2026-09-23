@@ -2,10 +2,90 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function conversationDoc(conversationId) {
+      return get(/databases/$(database)/documents/conversations/$(conversationId)).data;
+    }
+
+    function isConversationParticipant(data) {
+      return signedIn() && (
+        request.auth.uid == data.tutorId ||
+        (data.channel == 'student' && request.auth.uid == data.studentId) ||
+        (data.channel == 'parent' && data.parentId != null && request.auth.uid == data.parentId)
+      );
+    }
+
+    function validConversationShape(data) {
+      return data.tutorId is string
+        && data.studentId is string
+        && data.channel in ['student', 'parent']
+        && data.participants is list
+        && data.tutorId.size() > 0
+        && data.studentId.size() > 0
+        && request.auth.uid in data.participants
+        && (
+          (data.channel == 'student' && data.participants.hasAll([data.tutorId, data.studentId]))
+          ||
+          (data.channel == 'parent'
+            && data.parentId is string
+            && data.parentId.size() > 0
+            && data.participants.hasAll([data.tutorId, data.parentId]))
+        );
+    }
+
     match /users/{userId} {
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow read, update: if request.auth != null && request.auth.uid == userId;
+      allow create: if isSelf(userId);
+      allow read, update: if isSelf(userId);
       allow delete: if false;
+    }
+
+    match /conversations/{conversationId} {
+      allow read: if isConversationParticipant(resource.data);
+
+      allow create: if signedIn()
+        && validConversationShape(request.resource.data)
+        && isConversationParticipant(request.resource.data)
+        && request.resource.data.tutorUnread == 0
+        && request.resource.data.studentUnread == 0
+        && request.resource.data.parentUnread == 0;
+
+      allow update: if isConversationParticipant(resource.data)
+        && request.resource.data.tutorId == resource.data.tutorId
+        && request.resource.data.studentId == resource.data.studentId
+        && request.resource.data.channel == resource.data.channel
+        && request.resource.data.participants == resource.data.participants
+        && request.resource.data.parentId == resource.data.parentId;
+
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        allow read: if isConversationParticipant(conversationDoc(conversationId));
+
+        allow create: if isConversationParticipant(conversationDoc(conversationId))
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.senderRole in ['tutor', 'student', 'parent']
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 2000
+          && request.resource.data.messageType == 'text'
+          && request.resource.data.read == false
+          && request.resource.data.keys().hasAll([
+            'senderId', 'senderRole', 'recipientId', 'text', 'createdAt', 'read', 'messageType'
+          ]);
+
+        allow update: if isConversationParticipant(conversationDoc(conversationId))
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
+          && request.resource.data.read == true;
+
+        allow delete: if false;
+      }
     }
   }
 }

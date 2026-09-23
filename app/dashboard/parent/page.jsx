@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Bell, CalendarDays, CircleDollarSign, MessageCircle } from "lucide-react";
+import { Bell, CalendarDays, CircleDollarSign } from "lucide-react";
 import {
   CartesianGrid,
   Line,
@@ -12,7 +12,8 @@ import {
   YAxis,
 } from "recharts";
 import ScrollableTabs from "@/components/common/ScrollableTabs";
-import { EmptyState, MessageThread, Panel } from "@/components/common/Primitives";
+import { EmptyState, Panel } from "@/components/common/Primitives";
+import MessagingPanel from "@/components/messaging/MessagingPanel";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/lib/toast";
 import { useAuth } from "@/lib/auth";
@@ -52,7 +53,7 @@ export default function ParentPage() {
       {tab === "Overview" && <Overview store={store} />}
       {tab === "Assignments" && <Assignments store={store} />}
       {tab === "Payments" && <Payments store={store} push={push} />}
-      {tab === "Messages" && <Messages store={store} push={push} sender={user?.name ?? "Parent"} />}
+      {tab === "Messages" && <Messages user={user} />}
     </section>
   );
 }
@@ -211,70 +212,8 @@ function Payments({ store, push }) {
   );
 }
 
-function Messages({ store, push, sender }) {
-  const defaultStudent = store.students[0];
-  const [selectedStudentId, setSelectedStudentId] = useState(defaultStudent?.id || "");
-
-  const activeStudent =
-    store.students.find((s) => s.id === (selectedStudentId || defaultStudent?.id)) ||
-    defaultStudent;
-
-  const parentMessages = activeStudent
-    ? store.messages.filter(
-        (m) => m.studentId === activeStudent.id && m.channel === "parent",
-      )
-    : [];
-
-  const handleSend = (body) => {
-    if (!activeStudent) return;
-    store.sendMessage({
-      studentId: activeStudent.id,
-      channel: "parent",
-      from: sender,
-      to: "Tutor",
-      body,
-    });
-    push("Message sent.");
-  };
-
-  return (
-    <div className="mt-6">
-      <MessageThread
-        messages={parentMessages}
-        currentSender={sender}
-        onSend={handleSend}
-        placeholder="Ask the tutor a question"
-        emptyText="No messages yet."
-        header={
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-default)] pb-4">
-            <div className="flex items-center gap-2">
-              <MessageCircle size={18} className="text-primary-600" />
-              <p className="font-bold">Message the tutor</p>
-              {activeStudent && (
-                <span className="text-xs text-[var(--text-secondary)]">({activeStudent.name})</span>
-              )}
-            </div>
-            {store.students.length > 1 && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-[var(--text-secondary)]">Child:</span>
-                <select
-                  value={activeStudent?.id}
-                  onChange={(e) => setSelectedStudentId(e.target.value)}
-                  className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-semibold outline-primary-500"
-                >
-                  {store.students.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
-        }
-      />
-    </div>
-  );
+function Messages({ user }) {
+  return <MessagingPanel role="parent" user={user} />;
 }
 
 function Card({ title, children }) {

@@ -6,105 +6,66 @@ import {
   ArrowRight,
   BookOpen,
   CalendarDays,
-  CheckCircle2,
+  Check,
+  ClipboardCheck,
   GraduationCap,
-  Mail,
+  LineChart,
   Menu,
   MessageCircle,
   Moon,
   Sun,
   Users,
+  Wallet,
+  X,
 } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useTheme } from "@/lib/theme";
 import { FadeIn, FadeUp, FloatCard } from "@/components/motion/Reveal";
 
-const problems = [
-  {
-    icon: CalendarDays,
-    title: "Scheduling lives in your notebook",
-    copy: "Keep sessions, changes, and attendance in one calm place instead of chasing a calendar and a chat thread.",
-  },
-  {
-    icon: MessageCircle,
-    title: "Assignments disappear in chat",
-    copy: "Know what was assigned, what is overdue, and what still needs grading without searching through old messages.",
-  },
-  {
-    icon: Users,
-    title: "Parents are left guessing",
-    copy: "Give families a clear view of attendance, progress, assignments, and payments without another status request.",
-  },
-];
-
-const roles = [
-  {
-    icon: GraduationCap,
-    label: "Tutor",
-    title: "Run the whole practice",
-    copy: "See the work that needs your attention and keep every student moving.",
-    href: "/signin",
-    action: "Open tutor space",
-    items: [
-      "Schedule one off and group sessions",
-      "Track assignments, grading, and payments",
-      "See each student's progress at a glance",
-    ],
-  },
-  {
-    icon: BookOpen,
-    label: "Student",
-    title: "Know what comes next",
-    copy: "Keep sessions, tasks, scores, and tutor messages together in one view.",
-    href: "/signin",
-    action: "Open student view",
-    items: [
-      "See upcoming sessions and weekly goals",
-      "Submit work and review feedback",
-      "Follow syllabus progress and mock scores",
-    ],
-  },
-  {
-    icon: Users,
-    label: "Parent",
-    title: "Stay close without hovering",
-    copy: "Get the signal that matters without needing to ask for another update.",
-    href: "/signin",
-    action: "Open parent portal",
-    items: [
-      "Review attendance and assignment status",
-      "Follow progress and score trends",
-      "Check payment history and message the tutor",
-    ],
-  },
+const navLinks = [
+  { href: "#features", label: "Features" },
+  { href: "#how-it-works", label: "How it works" },
+  { href: "#tutors", label: "For Tutors" },
+  { href: "#students", label: "For Students" },
+  { href: "#parents", label: "For Parents" },
 ];
 
 export default function LandingPage() {
   const { dark, toggleTheme } = useTheme();
-
   return (
-    <main className="min-h-screen overflow-hidden bg-[var(--bg-page)] text-[var(--text-primary)]">
+    <main className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)]">
       <LandingHeader dark={dark} onToggleTheme={toggleTheme} />
       <Hero />
+      <ValueStrip />
       <ProblemSection />
-      <RolePreviewSection />
+      <FeaturesSection />
+      <HowItWorks />
+      <RolesSection />
+      <MessagingSection />
+      <FinalCta />
       <LandingFooter />
     </main>
   );
 }
 
 function LandingHeader({ dark, onToggleTheme }) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <header className="relative z-10 border-b border-[var(--border-default)] bg-[var(--bg-surface)]/80 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="flex items-center gap-2 font-extrabold tracking-tight">
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-primary-500 text-white">
-            <GraduationCap size={18} />
+    <header className="sticky top-0 z-40 border-b border-[var(--border-default)] bg-[var(--bg-surface)]/85 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+        <Link to="/" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary-500 text-white">
+            <GraduationCap size={16} />
           </span>
           TutorTrack
         </Link>
-        <nav className="hidden items-center gap-6 text-sm font-semibold text-[var(--text-secondary)] md:flex">
-          <a href="#why">Why TutorTrack</a>
-          <a href="#action">See it in action</a>
+        <nav className="hidden items-center gap-6 text-sm text-[var(--text-secondary)] lg:flex">
+          {navLinks.map((link) => (
+            <a key={link.href} href={link.href} className="transition hover:text-[var(--text-primary)]">
+              {link.label}
+            </a>
+          ))}
         </nav>
         <div className="flex items-center gap-2">
           <button
@@ -112,151 +73,263 @@ function LandingHeader({ dark, onToggleTheme }) {
             onClick={onToggleTheme}
             aria-label="Toggle color mode"
             aria-pressed={dark}
-            className="grid h-9 w-9 place-items-center rounded-full border border-[var(--border-default)] text-[var(--text-secondary)]"
+            className="grid h-9 w-9 place-items-center rounded-lg border border-[var(--border-default)] text-[var(--text-secondary)]"
           >
-            {dark ? <Sun size={17} /> : <Moon size={17} />}
+            {dark ? <Sun size={16} /> : <Moon size={16} />}
           </button>
           <Link
             to="/signin"
-            className="hidden rounded-full border border-[var(--border-default)] px-4 py-2.5 text-sm font-bold sm:inline-flex"
+            className="hidden rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] sm:inline-flex"
           >
             Sign in
           </Link>
           <Link
             to="/signup"
-            className="hidden rounded-full bg-primary-500 px-4 py-2.5 text-sm font-bold text-white sm:inline-flex"
+            className="hidden rounded-lg bg-primary-500 px-3.5 py-2 text-sm font-medium text-white hover:bg-primary-600 sm:inline-flex"
           >
             Get started
           </Link>
-          <Menu className="text-[var(--text-muted)] sm:hidden" size={20} aria-hidden="true" />
+          <button
+            type="button"
+            className="grid h-9 w-9 place-items-center rounded-lg text-[var(--text-secondary)] lg:hidden"
+            aria-label="Open menu"
+            onClick={() => setOpen(true)}
+          >
+            <Menu size={18} />
+          </button>
         </div>
       </div>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/40 lg:hidden"
+            onClick={() => setOpen(false)}
+          >
+            <motion.aside
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 26, stiffness: 280 }}
+              onClick={(event) => event.stopPropagation()}
+              className="absolute right-0 top-0 flex h-full w-[min(20rem,86vw)] flex-col bg-[var(--bg-surface)] p-5 shadow-xl"
+            >
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold">Menu</p>
+                <button type="button" aria-label="Close menu" onClick={() => setOpen(false)}>
+                  <X size={18} />
+                </button>
+              </div>
+              <nav className="mt-8 flex flex-col gap-4 text-sm">
+                {navLinks.map((link) => (
+                  <a key={link.href} href={link.href} onClick={() => setOpen(false)}>
+                    {link.label}
+                  </a>
+                ))}
+              </nav>
+              <div className="mt-auto grid gap-2">
+                <Link to="/signin" className="rounded-lg border border-[var(--border-default)] px-4 py-2.5 text-center text-sm">
+                  Sign in
+                </Link>
+                <Link to="/signup" className="rounded-lg bg-primary-500 px-4 py-2.5 text-center text-sm font-medium text-white">
+                  Get started
+                </Link>
+              </div>
+            </motion.aside>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
 
 function Hero() {
   return (
-    <section className="relative border-b border-[var(--border-default)]">
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 py-20 sm:px-6 sm:py-24 lg:grid-cols-[1.1fr_.9fr] lg:items-center lg:px-8 lg:py-28">
-        <div className="relative z-10 max-w-2xl">
+    <section className="relative overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(47,95,151,0.12),transparent_55%)]" />
+      <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[1.05fr_.95fr] lg:py-24">
+        <div>
           <FadeUp>
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary-200 bg-primary-50 px-3 py-1.5 text-xs font-bold uppercase tracking-[.16em] text-primary-700">
-              The calm command centre for tutoring
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary-600">
+              Tutoring operations, in one place
             </p>
           </FadeUp>
-          <FadeUp delay={0.08}>
-            <h1 className="max-w-2xl text-[clamp(2.5rem,4.5vw,4rem)] font-extrabold leading-[1.08] tracking-tight">
-              Replace the notebook, chat threads, and payment chases
-              <span className="text-primary-500"> with one calm place to run your tutoring practice.</span>
+          <FadeUp delay={0.06}>
+            <h1 className="mt-4 max-w-xl text-[clamp(2rem,4vw,3.35rem)] font-semibold leading-[1.12] tracking-tight">
+              Everything your tutoring practice needs, in one place.
             </h1>
           </FadeUp>
-          <FadeUp delay={0.16}>
-            <p className="mt-6 max-w-xl text-base leading-7 text-[var(--text-secondary)] sm:text-lg">
-              TutorTrack is built for independent exam prep tutors who want less admin and clearer progress for every family.
+          <FadeUp delay={0.12}>
+            <p className="mt-5 max-w-lg text-[15px] leading-7 text-[var(--text-secondary)]">
+              Manage students, schedules, assignments, payments and conversations without switching between notebooks, spreadsheets and chat apps.
             </p>
           </FadeUp>
-          <FadeUp delay={0.24}>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <FadeUp delay={0.18}>
+            <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 to="/signup"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-500 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-primary-500/20"
+                className="inline-flex items-center gap-2 rounded-xl bg-primary-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm shadow-primary-500/20 hover:bg-primary-600"
               >
-                Get started <ArrowRight size={17} />
+                Get started <ArrowRight size={16} />
               </Link>
               <a
-                href="#why"
-                className="inline-flex items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] px-5 py-3.5 text-sm font-bold"
+                href="#how-it-works"
+                className="inline-flex items-center rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-5 py-2.5 text-sm font-medium"
               >
-                Why tutors use it
+                See how it works
               </a>
             </div>
           </FadeUp>
-          <FadeUp delay={0.3}>
-            <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-[var(--text-secondary)]">
-              <span className="inline-flex items-center gap-2">
-                <CheckCircle2 className="text-primary-500" size={16} /> Scheduling
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <CheckCircle2 className="text-primary-500" size={16} /> Assignments
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <CheckCircle2 className="text-primary-500" size={16} /> Parent visibility
-              </span>
-            </div>
-          </FadeUp>
         </div>
-        <HeroPhoto />
+        <FloatCard>
+          <ProductPreview />
+        </FloatCard>
       </div>
     </section>
   );
 }
 
-function HeroPhoto() {
+function ProductPreview() {
   return (
-    <FloatCard className="relative mx-auto w-full max-w-xl">
-      <div className="overflow-hidden rounded-[2rem] border border-[var(--border-default)] bg-[var(--bg-surface)] p-3 shadow-2xl shadow-black/10">
-        <div className="relative aspect-[4/5] overflow-hidden rounded-[1.5rem] bg-primary-100">
-          <PhotoWithFallback
-            src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=85"
-            alt="A tutor and student working through a lesson together"
-            sizes="(min-width: 1024px) 480px, 90vw"
-            priority
-          />
-          <div className="absolute inset-x-4 bottom-4 rounded-2xl bg-black/55 p-4 text-white backdrop-blur">
-            <p className="text-xs font-bold uppercase tracking-[.16em] text-primary-200">
-              Live session
-            </p>
-            <p className="mt-1 text-sm font-semibold">Mathematics, differentiation</p>
+    <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-3 shadow-sm">
+      <div className="rounded-xl bg-[var(--bg-page)] p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs text-[var(--text-secondary)]">Today</p>
+            <p className="text-sm font-semibold">Practice overview</p>
           </div>
+          <span className="rounded-md bg-primary-100 px-2 py-1 text-[11px] font-medium text-primary-700">Live preview</span>
         </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <PreviewCard label="Upcoming session" value="Quadratic equations" detail="Thu · 16:00–17:00" />
+          <PreviewCard label="Student progress" value="Amara · 80 avg" detail="Three graded assignments" />
+          <PreviewCard label="Assignment status" value="2 ready to grade" detail="Submitted this week" />
+          <PreviewCard label="Payment status" value="$220 due" detail="September tuition" />
+        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="mt-3 flex items-start gap-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-3"
+        >
+          <span className="mt-0.5 grid h-8 w-8 place-items-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700">
+            AO
+          </span>
+          <div>
+            <p className="text-xs font-medium">Amara Okafor</p>
+            <p className="mt-0.5 text-xs leading-5 text-[var(--text-secondary)]">
+              I had a question on question 4 of the algebra practice set.
+            </p>
+          </div>
+        </motion.div>
       </div>
-    </FloatCard>
+    </div>
   );
 }
 
-function PhotoWithFallback({ src, alt, sizes, priority }) {
-  const [failed, setFailed] = useState(false);
-  if (failed) {
-    return (
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-200 via-primary-100 to-primary-300" />
-    );
-  }
+function PreviewCard({ label, value, detail }) {
   return (
-    <img
-      src={src}
-      alt={alt}
-      className="absolute inset-0 h-full w-full object-cover"
-      loading={priority ? "eager" : "lazy"}
-      onError={() => setFailed(true)}
-    />
+    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-3">
+      <p className="text-[11px] text-[var(--text-secondary)]">{label}</p>
+      <p className="mt-1 text-sm font-semibold">{value}</p>
+      <p className="mt-1 text-[11px] text-[var(--text-muted)]">{detail}</p>
+    </div>
+  );
+}
+
+function ValueStrip() {
+  const items = [
+    { icon: CalendarDays, label: "Scheduling" },
+    { icon: ClipboardCheck, label: "Assignments" },
+    { icon: LineChart, label: "Progress tracking" },
+    { icon: Wallet, label: "Payments" },
+    { icon: MessageCircle, label: "Messaging" },
+  ];
+  return (
+    <section className="border-y border-[var(--border-default)] bg-[var(--bg-surface)]">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-5 sm:px-6">
+        {items.map(({ icon: Icon, label }) => (
+          <div key={label} className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+            <Icon size={16} className="text-primary-500" />
+            {label}
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
 function ProblemSection() {
+  const problems = [
+    "Sessions scattered across calendars and chats",
+    "Assignments lost inside conversations",
+    "Parents asking repeatedly for progress updates",
+    "Payment tracking being manual",
+    "Communication split between multiple apps",
+  ];
   return (
-    <section id="why" className="bg-[var(--bg-surface)]/50">
-      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
-        <FadeUp className="max-w-2xl">
-          <p className="text-sm font-bold uppercase tracking-[.16em] text-primary-600">
-            The admin problem
-          </p>
-          <h2 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">
-            A calmer operating rhythm for every tutoring practice.
-          </h2>
-          <p className="mt-4 text-[var(--text-secondary)]">
-            TutorTrack gives the scattered parts of your practice a shared home, so the important signals do not get buried.
-          </p>
+    <section id="features" className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+      <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
+        <FadeUp>
+          <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary-600">The problem</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight">Tutoring work is simple. The admin around it is not.</h2>
+          <ul className="mt-6 space-y-3">
+            {problems.map((item) => (
+              <li key={item} className="flex gap-3 text-sm leading-6 text-[var(--text-secondary)]">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary-400" />
+                {item}
+              </li>
+            ))}
+          </ul>
         </FadeUp>
-        <div className="mt-12 grid gap-4 md:grid-cols-3">
-          {problems.map(({ icon: Icon, title, copy }, index) => (
-            <FadeUp key={title} delay={index * 0.08}>
-              <article className="h-full rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-sm">
-                <span className="grid h-11 w-11 place-items-center rounded-full bg-primary-100 text-primary-700">
-                  <Icon size={21} />
+        <FadeUp delay={0.08}>
+          <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-sm">
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary-600">The solution</p>
+            <h3 className="mt-3 text-xl font-semibold">TutorTrack centralizes the practice.</h3>
+            <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
+              One workspace for the session, the assignment, the score, the invoice, and the conversation. Tutors keep the teaching. Families get a clear view without another status request.
+            </p>
+            <div className="mt-6 grid gap-2 text-sm">
+              {["Shared schedule", "Visible assignment status", "Progress charts", "In-app messaging"].map((item) => (
+                <p key={item} className="flex items-center gap-2">
+                  <Check size={15} className="text-primary-500" /> {item}
+                </p>
+              ))}
+            </div>
+          </div>
+        </FadeUp>
+      </div>
+    </section>
+  );
+}
+
+function FeaturesSection() {
+  const features = [
+    { icon: CalendarDays, title: "Smart scheduling", copy: "Keep one-off and recurring sessions in a single calendar instead of chasing chat confirmations." },
+    { icon: ClipboardCheck, title: "Assignment management", copy: "Assign work, collect submissions, and record scores without hunting through old threads." },
+    { icon: LineChart, title: "Progress tracking", copy: "See how scores move over time so the next lesson is based on evidence, not guesswork." },
+    { icon: Wallet, title: "Payment tracking", copy: "Record what is due, mark what is paid, and keep a simple history for each family." },
+    { icon: MessageCircle, title: "Tutor/student messaging", copy: "Talk in real time inside TutorTrack, with a separate thread when a parent needs to join." },
+    { icon: Users, title: "Parent visibility", copy: "Give families a read-clear view of sessions, assignments, and progress without extra updates." },
+  ];
+  return (
+    <section className="border-y border-[var(--border-default)] bg-[var(--bg-surface)]/60">
+      <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+        <FadeUp className="max-w-2xl">
+          <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary-600">Product</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight">The tools a tutoring practice actually uses.</h2>
+        </FadeUp>
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {features.map(({ icon: Icon, title, copy }, index) => (
+            <FadeUp key={title} delay={index * 0.05}>
+              <article className="h-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary-100 text-primary-700">
+                  <Icon size={18} />
                 </span>
-                <h3 className="mt-6 text-lg font-extrabold">{title}</h3>
-                <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">{copy}</p>
+                <h3 className="mt-4 text-base font-semibold">{title}</h3>
+                <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">{copy}</p>
               </article>
             </FadeUp>
           ))}
@@ -266,33 +339,66 @@ function ProblemSection() {
   );
 }
 
-const rolePhotos = {
-  Tutor: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=700&q=85",
-  Student: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=700&q=85",
-  Parent: "https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?auto=format&fit=crop&w=700&q=85",
-};
-
-function RolePreviewSection() {
+function HowItWorks() {
+  const steps = [
+    { n: "01", title: "Create your tutoring space", copy: "Sign up as a tutor, student, or parent and land in a workspace built for that role." },
+    { n: "02", title: "Add students and organize learning", copy: "Bring the roster, sessions, and assignments into one place so the week is visible." },
+    { n: "03", title: "Communicate, track progress and manage payments", copy: "Message in real time, record scores, and keep payment status next to the work." },
+  ];
   return (
-    <section id="action" className="border-y border-[var(--border-default)] bg-[var(--bg-surface)]/40">
-      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
-        <FadeUp className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div className="max-w-2xl">
-            <p className="text-sm font-bold uppercase tracking-[.16em] text-primary-600">
-              See it in action
-            </p>
-            <h2 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">
-              One practice, three clear views.
-            </h2>
-          </div>
-          <p className="max-w-sm text-sm leading-6 text-[var(--text-secondary)]">
-            Create an account and explore the space built for you.
-          </p>
+    <section id="how-it-works" className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+      <FadeUp>
+        <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary-600">How it works</p>
+        <h2 className="mt-3 max-w-xl text-3xl font-semibold tracking-tight">A quieter path from first student to a running practice.</h2>
+      </FadeUp>
+      <div className="mt-12 grid gap-6 lg:grid-cols-3">
+        {steps.map((step, index) => (
+          <FadeUp key={step.n} delay={index * 0.08}>
+            <div className="relative h-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
+              <p className="text-sm font-medium text-primary-500">{step.n}</p>
+              <h3 className="mt-4 text-lg font-semibold">{step.title}</h3>
+              <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">{step.copy}</p>
+            </div>
+          </FadeUp>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function RolesSection() {
+  const roles = [
+    { id: "tutors", icon: GraduationCap, label: "Tutor", title: "Run your entire tutoring practice.", items: ["Schedule and roster", "Grade assignments", "Message students and parents"] },
+    { id: "students", icon: BookOpen, label: "Student", title: "Know exactly what to learn and what comes next.", items: ["Upcoming sessions", "Assignment status", "Direct tutor chat"] },
+    { id: "parents", icon: Users, label: "Parent", title: "Stay informed without constantly asking for updates.", items: ["Progress charts", "Payment status", "A dedicated tutor thread"] },
+  ];
+  return (
+    <section className="border-y border-[var(--border-default)] bg-[var(--bg-surface)]/50">
+      <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+        <FadeUp>
+          <h2 className="text-3xl font-semibold tracking-tight">Three roles. One shared source of truth.</h2>
         </FadeUp>
         <div className="mt-10 grid gap-5 lg:grid-cols-3">
           {roles.map((role, index) => (
-            <FadeUp key={role.label} delay={index * 0.1}>
-              <RoleCard {...role} />
+            <FadeUp key={role.label} delay={index * 0.08}>
+              <article id={role.id} className="h-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 shadow-sm">
+                <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+                  <role.icon size={16} className="text-primary-600" />
+                  {role.label}
+                </div>
+                <h3 className="mt-4 text-lg font-semibold">{role.title}</h3>
+                <div className="mt-5 rounded-xl bg-[var(--bg-page)] p-4">
+                  <p className="text-[11px] uppercase tracking-wider text-[var(--text-muted)]">{role.label} preview</p>
+                  <ul className="mt-3 space-y-2 text-sm text-[var(--text-secondary)]">
+                    {role.items.map((item) => (
+                      <li key={item} className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary-400" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </article>
             </FadeUp>
           ))}
         </div>
@@ -301,85 +407,124 @@ function RolePreviewSection() {
   );
 }
 
-function RoleCard({ icon: Icon, label, title, copy, href, action, items }) {
+function MessagingSection() {
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-[var(--border-default)] bg-[var(--bg-surface)] shadow-lg shadow-black/5">
-      <div className="relative h-40 w-full bg-primary-100">
-        <PhotoWithFallback
-          src={rolePhotos[label]}
-          alt={`${label} using TutorTrack`}
-          sizes="(min-width: 1024px) 360px, 90vw"
-        />
+    <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+      <div className="grid items-center gap-12 lg:grid-cols-2">
+        <FadeUp>
+          <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary-600">Messaging</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight">Talk to your tutor without leaving TutorTrack.</h2>
+          <p className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">
+            Real-time conversations between tutors and students, with a separate parent thread when a family needs to be involved. Messages stay with the practice, not in a private chat history nobody else can find.
+          </p>
+        </FadeUp>
+        <FadeUp delay={0.1}>
+          <div className="overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] shadow-sm">
+            <div className="grid sm:grid-cols-[13rem_minmax(0,1fr)]">
+              <div className="border-b border-[var(--border-default)] p-3 sm:border-b-0 sm:border-r">
+                <p className="px-2 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">Inbox</p>
+                <div className="mt-2 flex items-center gap-2 rounded-lg bg-primary-50 p-2">
+                  <span className="relative grid h-8 w-8 place-items-center rounded-full bg-primary-100 text-[11px] font-semibold text-primary-700">
+                    AO
+                    <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-success-500 ring-2 ring-[var(--bg-surface)]" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-semibold">Amara Okafor</p>
+                    <p className="truncate text-[11px] text-[var(--text-secondary)]">Question on question 4…</p>
+                  </div>
+                  <span className="ml-auto rounded-full bg-primary-500 px-1.5 text-[10px] text-white">1</span>
+                </div>
+              </div>
+              <div className="p-4">
+                <div className="flex items-center gap-2 border-b border-[var(--border-default)] pb-3">
+                  <span className="grid h-8 w-8 place-items-center rounded-full bg-primary-100 text-[11px] font-semibold text-primary-700">AO</span>
+                  <div>
+                    <p className="text-sm font-semibold">Amara Okafor</p>
+                    <p className="text-[11px] text-[var(--text-secondary)]">Student thread</p>
+                  </div>
+                </div>
+                <div className="mt-4 space-y-3">
+                  <div className="max-w-[80%] rounded-2xl rounded-bl-md bg-[var(--bg-surface-muted)] px-3 py-2 text-xs leading-5">
+                    I had a question on question 4 of the algebra practice set.
+                    <p className="mt-1 text-[10px] text-[var(--text-muted)]">2h ago</p>
+                  </div>
+                  <div className="ml-auto max-w-[80%] rounded-2xl rounded-br-md bg-primary-500 px-3 py-2 text-xs leading-5 text-white">
+                    Let’s review the quadratic formula together in our next session.
+                    <p className="mt-1 text-[10px] text-primary-100">1h ago</p>
+                  </div>
+                </div>
+                <div className="mt-4 rounded-xl border border-[var(--border-default)] px-3 py-2 text-xs text-[var(--text-muted)]">
+                  Write a message
+                </div>
+              </div>
+            </div>
+          </div>
+        </FadeUp>
       </div>
-      <div className="flex flex-1 flex-col p-6 sm:p-7">
-        <div className="flex items-center justify-between">
-          <span className="grid h-11 w-11 place-items-center rounded-full bg-primary-100 text-primary-700">
-            <Icon size={21} />
-          </span>
-          <span className="text-xs font-bold uppercase tracking-[.16em] text-[var(--text-muted)]">
-            {label} view
-          </span>
+    </section>
+  );
+}
+
+function FinalCta() {
+  return (
+    <section className="border-y border-[var(--border-default)] bg-primary-900 text-white">
+      <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-4 py-16 sm:px-6 lg:flex-row lg:items-center">
+        <div>
+          <h2 className="text-3xl font-semibold tracking-tight">Give your tutoring practice a calmer workflow.</h2>
+          <p className="mt-3 max-w-xl text-sm leading-6 text-primary-100">
+            Create a space for tutors, students, and parents to share the same schedule, scores, and conversations.
+          </p>
         </div>
-        <h3 className="mt-6 text-xl font-extrabold">{title}</h3>
-        <p className="mt-3 min-h-12 text-sm leading-6 text-[var(--text-secondary)]">{copy}</p>
-        <ul className="mt-6 space-y-3 border-t border-[var(--border-default)] pt-5 text-sm text-[var(--text-secondary)]">
-          {items.map((item) => (
-            <li key={item} className="flex gap-2">
-              <CheckCircle2 className="mt-0.5 shrink-0 text-primary-500" size={16} />
-              {item}
-            </li>
-          ))}
-        </ul>
-        <Link
-          to={href}
-          className="mt-7 inline-flex items-center justify-between rounded-full bg-primary-500 px-4 py-3 text-sm font-bold text-white"
-        >
-          {action}
-          <ArrowRight size={17} />
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link to="/signup" className="rounded-xl bg-white px-5 py-2.5 text-sm font-medium text-primary-900">
+            Get started
+          </Link>
+          <Link to="/signin" className="rounded-xl border border-white/20 px-5 py-2.5 text-sm font-medium text-white">
+            Sign in
+          </Link>
+        </div>
       </div>
-    </article>
+    </section>
   );
 }
 
 function LandingFooter() {
   return (
     <FadeIn>
-      <footer className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-10 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-        <div>
-          <Link to="/" className="flex items-center gap-2 font-extrabold">
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-primary-500 text-white">
-              <GraduationCap size={18} />
+      <footer className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-4">
+        <div className="md:col-span-1">
+          <Link to="/" className="flex items-center gap-2 text-sm font-semibold">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary-500 text-white">
+              <GraduationCap size={16} />
             </span>
             TutorTrack
           </Link>
-          <p className="mt-3 text-sm text-[var(--text-secondary)]">
-            A clearer way to run independent exam prep.
+          <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">
+            A quieter operating system for independent tutoring.
           </p>
         </div>
-        <form
-          className="flex w-full max-w-md flex-col gap-2 sm:flex-row"
-          onSubmit={(event) => event.preventDefault()}
-        >
-          <label className="sr-only" htmlFor="updates-email">
-            Email address
-          </label>
-          <div className="relative min-w-0 flex-1">
-            <Mail className="absolute left-4 top-3.5 text-[var(--text-muted)]" size={17} />
-            <input
-              id="updates-email"
-              type="email"
-              placeholder="Your email for product updates"
-              className="w-full rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] py-3 pl-11 pr-3 text-sm outline-primary-500"
-            />
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">Product</p>
+          <div className="mt-3 grid gap-2 text-sm">
+            <a href="#features">Features</a>
+            <a href="#how-it-works">How it works</a>
           </div>
-          <button
-            type="submit"
-            className="rounded-full bg-primary-500 px-4 py-3 text-sm font-bold text-white"
-          >
-            Keep me posted
-          </button>
-        </form>
+        </div>
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">Roles</p>
+          <div className="mt-3 grid gap-2 text-sm">
+            <a href="#tutors">For Tutors</a>
+            <a href="#students">For Students</a>
+            <a href="#parents">For Parents</a>
+          </div>
+        </div>
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">Account</p>
+          <div className="mt-3 grid gap-2 text-sm">
+            <Link to="/signin">Sign in</Link>
+            <Link to="/signup">Get started</Link>
+          </div>
+        </div>
       </footer>
     </FadeIn>
   );
