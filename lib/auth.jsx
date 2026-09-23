@@ -4,12 +4,21 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   updateProfile,
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+
+export const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+export const PASSWORD_HINT =
+  "Use at least 8 characters, with uppercase, lowercase, a number, and a special character.";
+
+export function isStrongPassword(password) {
+  return PASSWORD_REGEX.test(password || "");
+}
 
 const AuthContext = createContext(null);
 
@@ -65,9 +74,16 @@ export function AuthProvider({ children }) {
     // onAuthStateChanged will pick this up and populate `user` automatically.
   };
 
+  const resetPassword = async (email) => {
+    await sendPasswordResetEmail(auth, email);
+  };
+
   const signOut = () => firebaseSignOut(auth);
 
-  const value = useMemo(() => ({ user, loading, signUp, signIn, signOut }), [user, loading]);
+  const value = useMemo(
+    () => ({ user, loading, signUp, signIn, signOut, resetPassword }),
+    [user, loading],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

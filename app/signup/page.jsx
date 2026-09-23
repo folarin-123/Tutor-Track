@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import AuthShell, { RoleSelector } from "@/components/auth/AuthShell";
-import { useAuth } from "@/lib/auth";
+import { isStrongPassword, PASSWORD_HINT, useAuth } from "@/lib/auth";
 
 const roleCopy = {
   tutor: {
@@ -59,6 +59,10 @@ export default function SignUpPage() {
       );
       return;
     }
+    if (!isStrongPassword(password)) {
+      setError(PASSWORD_HINT);
+      return;
+    }
     setError("");
     setSubmitting(true);
     try {
@@ -75,7 +79,7 @@ export default function SignUpPage() {
         err?.code === "auth/email-already-in-use"
           ? "That email already has an account — try signing in instead."
           : err?.code === "auth/weak-password"
-          ? "Password should be at least 6 characters."
+          ? PASSWORD_HINT
           : err?.code === "permission-denied"
           ? "Account created, but Firestore permissions need to be configured."
           : "Something went wrong creating your account. Please try again."
@@ -122,7 +126,7 @@ export default function SignUpPage() {
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder="At least 6 characters"
+              placeholder="A strong password"
               className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 pr-12 font-normal outline-primary-500"
             />
             <button
@@ -135,6 +139,7 @@ export default function SignUpPage() {
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
+          <p className="mt-1 text-xs font-normal text-[var(--text-secondary)]">{PASSWORD_HINT}</p>
         </label>
         {role === "tutor" && (
           <div>

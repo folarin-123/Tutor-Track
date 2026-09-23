@@ -1,7 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Bell, CalendarDays, CircleDollarSign, MessageCircle } from "lucide-react";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import ScrollableTabs from "@/components/common/ScrollableTabs";
 import { EmptyState, MessageThread, Panel } from "@/components/common/Primitives";
 import { useStore } from "@/lib/store";
@@ -49,8 +58,28 @@ export default function ParentPage() {
 }
 
 function Overview({ store }) {
+  const [studentId, setStudentId] = useState(store.students[0]?.id || "");
+  const activeStudent =
+    store.students.find((student) => student.id === studentId) || store.students[0];
+  const scorePoints = useMemo(() => {
+    if (!activeStudent) return [];
+    return store.assignments
+      .filter(
+        (item) =>
+          item.studentId === activeStudent.id &&
+          item.status === "Graded" &&
+          item.score != null &&
+          item.score !== "" &&
+          Number.isFinite(Number(item.score)),
+      )
+      .slice()
+      .sort((a, b) => String(a.due).localeCompare(String(b.due)))
+      .map((item) => ({ due: item.due, score: Number(item.score) }));
+  }, [store.assignments, activeStudent]);
+
   return (
-    <div className="mt-6 grid gap-5 md:grid-cols-2">
+    <div className="mt-6 space-y-5">
+      <div className="grid gap-5 md:grid-cols-2">
       <Card title="Upcoming session">
         {store.sessions.length === 0 ? (
           <EmptyState title="No sessions yet" body="Nothing scheduled yet." />
@@ -70,6 +99,49 @@ function Overview({ store }) {
           <Kpi n={store.sessions.length} l="Sessions" />
         </div>
       </Card>
+      </div>
+      <Panel title={activeStudent ? `${activeStudent.name}'s progress` : "Progress"}>
+        {store.students.length > 1 && (
+          <div className="mb-4 flex items-center gap-2">
+            <span className="text-xs text-[var(--text-secondary)]">Child:</span>
+            <select
+              value={activeStudent?.id || ""}
+              onChange={(event) => setStudentId(event.target.value)}
+              className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-semibold outline-primary-500"
+            >
+              {store.students.map((student) => (
+                <option key={student.id} value={student.id}>
+                  {student.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        {scorePoints.length < 2 ? (
+          <EmptyState
+            title="Not enough graded scores yet"
+            body="A progress chart appears after at least two graded assignments."
+          />
+        ) : (
+          <div className="h-72 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={scorePoints} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+                <CartesianGrid stroke="var(--border-default)" strokeDasharray="3 3" />
+                <XAxis dataKey="due" tick={{ fontSize: 12, fill: "var(--text-secondary)" }} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: "var(--text-secondary)" }} />
+                <Tooltip />
+                <Line
+                  type="monotone"
+                  dataKey="score"
+                  stroke="var(--color-primary-500)"
+                  strokeWidth={2}
+                  dot={{ r: 3 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </Panel>
     </div>
   );
 }

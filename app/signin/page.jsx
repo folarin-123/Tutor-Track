@@ -4,15 +4,16 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import AuthShell from "@/components/auth/AuthShell";
-import { useAuth } from "@/lib/auth";
+import { isStrongPassword, PASSWORD_HINT, useAuth } from "@/lib/auth";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [resetMessage, setResetMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const { signIn, user } = useAuth();
+  const { signIn, resetPassword, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,7 +26,12 @@ export default function SignInPage() {
       setError("Enter your email and password to continue.");
       return;
     }
+    if (!isStrongPassword(password)) {
+      setError(PASSWORD_HINT);
+      return;
+    }
     setError("");
+    setResetMessage("");
     setSubmitting(true);
     try {
       await signIn({ email: email.trim(), password });
@@ -77,7 +83,28 @@ export default function SignInPage() {
             </button>
           </div>
         </label>
+        <button
+          type="button"
+          onClick={async () => {
+            setError("");
+            setResetMessage("");
+            if (!email.trim()) {
+              setError("Enter your email first to reset your password.");
+              return;
+            }
+            try {
+              await resetPassword(email.trim());
+            } catch {
+              // Always show the same confirmation so we never reveal whether the email is registered.
+            }
+            setResetMessage("If an account exists for that email, a reset link has been sent.");
+          }}
+          className="text-sm font-bold text-primary-600"
+        >
+          Forgot password?
+        </button>
         {error && <p className="text-sm font-semibold text-danger-500">{error}</p>}
+        {resetMessage && <p className="text-sm font-semibold text-danger-500">{resetMessage}</p>}
         <button
           type="submit"
           disabled={submitting}

@@ -22,7 +22,14 @@ const demoData = {
   assignments: [
     { id: "A-demo-1", studentId: "ST-demo-1", studentName: "Amara Okafor", title: "Complete algebra practice set", due: "2026-09-26", status: "Assigned" },
     { id: "A-demo-2", studentId: "ST-demo-2", studentName: "Daniel Mensah", title: "Submit circuit calculations", due: "2026-09-23", status: "Submitted" },
-    { id: "A-demo-3", studentId: "ST-demo-3", studentName: "Zainab Bello", title: "Mark biology mock paper", due: "2026-09-21", status: "Graded" },
+    { id: "A-demo-3", studentId: "ST-demo-3", studentName: "Zainab Bello", title: "Mark biology mock paper", due: "2026-09-21", status: "Graded", score: 78 },
+    { id: "A-demo-4", studentId: "ST-demo-1", studentName: "Amara Okafor", title: "Algebra revision quiz", due: "2026-09-05", status: "Graded", score: 72 },
+    { id: "A-demo-5", studentId: "ST-demo-1", studentName: "Amara Okafor", title: "Functions problem set", due: "2026-08-20", status: "Graded", score: 84 },
+    { id: "A-demo-10", studentId: "ST-demo-1", studentName: "Amara Okafor", title: "Coordinate geometry drill", due: "2026-09-18", status: "Graded", score: 80 },
+    { id: "A-demo-6", studentId: "ST-demo-2", studentName: "Daniel Mensah", title: "Forces review worksheet", due: "2026-09-10", status: "Graded", score: 81 },
+    { id: "A-demo-7", studentId: "ST-demo-2", studentName: "Daniel Mensah", title: "Mechanics checkpoint", due: "2026-08-25", status: "Graded", score: 76 },
+    { id: "A-demo-8", studentId: "ST-demo-3", studentName: "Zainab Bello", title: "Cell biology quiz", due: "2026-09-12", status: "Graded", score: 88 },
+    { id: "A-demo-9", studentId: "ST-demo-3", studentName: "Zainab Bello", title: "Genetics practice paper", due: "2026-08-28", status: "Graded", score: 83 },
   ],
   payments: [
     { id: "PY-demo-1", studentId: "ST-demo-1", studentName: "Amara Okafor", amount: 180, month: "September 2026", status: "Paid" },
@@ -181,14 +188,19 @@ export function StoreProvider({ children }) {
       title: input.title,
       due: input.due,
       status: "Draft",
+      score: null,
     };
     setAssignments((list) => [...list, assignment]);
     return assignment;
   }, []);
 
-  const gradeAssignment = useCallback((id) => {
+  const gradeAssignment = useCallback((id, score) => {
     setAssignments((list) =>
-      list.map((item) => (item.id === id ? { ...item, status: "Graded" } : item)),
+      list.map((item) =>
+        item.id === id
+          ? { ...item, status: "Graded", score: score == null || score === "" ? null : Number(score) }
+          : item,
+      ),
     );
   }, []);
 

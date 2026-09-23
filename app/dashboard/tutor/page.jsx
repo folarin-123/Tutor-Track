@@ -24,9 +24,26 @@ import {
   SelectField,
   Stat,
 } from "@/components/common/Primitives";
+import {
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/lib/toast";
 import { useAuth } from "@/lib/auth";
+
+const SCORE_LINE_COLORS = [
+  "var(--color-primary-500)",
+  "var(--color-success-500)",
+  "var(--color-warning-500)",
+  "var(--color-danger-500)",
+];
 
 const tabs = ["Overview", "Schedule", "Students", "Assignments", "Payments", "Messages"];
 const money = (n) => `$${Number(n || 0).toLocaleString("en-US")}`;
@@ -119,6 +136,11 @@ function getCreateLabel(tab) {
 }
 
 function Overview({ go, store, outstanding, dueGrading }) {
+  const trend = useMemo(
+    () => buildStudentAverageTrend(store.students, store.assignments),
+    [store.students, store.assignments],
+  );
+
   return (
     <div className="mt-7 space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -151,6 +173,37 @@ function Overview({ go, store, outstanding, dueGrading }) {
           tone="primary"
         />
       </div>
+      <Panel title="Student score trends">
+        {trend.data.length < 2 ? (
+          <EmptyState
+            title="Not enough graded scores yet"
+            body="Grade at least two assignments so a trend can appear."
+          />
+        ) : (
+          <div className="h-72 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={trend.data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+                <CartesianGrid stroke="var(--border-default)" strokeDasharray="3 3" />
+                <XAxis dataKey="due" tick={{ fontSize: 12, fill: "var(--text-secondary)" }} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: "var(--text-secondary)" }} />
+                <Tooltip />
+                <Legend />
+                {trend.lines.map((name, index) => (
+                  <Line
+                    key={name}
+                    type="monotone"
+                    dataKey={name}
+                    stroke={SCORE_LINE_COLORS[index % SCORE_LINE_COLORS.length]}
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    connectNulls
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </Panel>
       <div className="grid gap-6 xl:grid-cols-[1.25fr_.75fr]">
         <Panel title="Upcoming sessions" action="Open schedule" onAction={() => go("Schedule")}>
           {store.sessions.length === 0 ? (
@@ -284,6 +337,7 @@ function Students({ store, onAdd }) {
 }
 
 function Assignments({ store, push }) {
+  const [grading, setGrading] = useState(null);
   const graded = store.assignments.filter((item) => item.status === "Graded").length;
   const pending = store.assignments.length - graded;
   return (
@@ -312,10 +366,8 @@ function Assignments({ store, push }) {
                   <StatusBadge status={task.status} />
                   {task.status !== "Graded" && (
                     <button
-                      onClick={() => {
-                        store.gradeAssignment(task.id);
-                        push("Assignment marked as graded.");
-                      }}
+                      type="button"
+                      onClick={() => setGrading(task)}
                       className="rounded-full bg-primary-900 px-3 py-2 text-xs font-bold text-white"
                     >
                       Mark graded
@@ -327,6 +379,17 @@ function Assignments({ store, push }) {
           </div>
         )}
       </Panel>
+      {grading && (
+        <GradeAssignmentModal
+          assignment={grading}
+          onClose={() => setGrading(null)}
+          onSave={(score) => {
+            store.gradeAssignment(grading.id, score);
+            push("Assignment marked as graded.");
+            setGrading(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -565,6 +628,85 @@ function StatusBadge({ status }) {
   return (
     <span className={`rounded-full px-3 py-1.5 text-xs font-bold ${tone}`}>{status}</span>
   );
+}
+
+function GradeAssignmentModal({ assignment, onClose, onSave }) {
+  const [score, setScore] = useState("");
+  const [error, setError] = useState("");
+
+  const submit = () => {
+    const value = Number(score);
+    if (score === "" || !Number.isFinite(value) || value < 0 || value > 100) {
+      setError("Enter a number between 0 and 100.");
+      return;
+    }
+    onSave(value);
+  };
+
+  return (
+    <Modal title="Record a score" onClose={onClose}>
+      <p className="mb-4 text-sm text-[var(--text-secondary)]">
+        Grade {assignment.title} for {assignment.studentName}.
+      </p>
+      <Field
+        label="Score (0–100)"
+        type="number"
+        min="0"
+        max="100"
+        value={score}
+        onChange={(event) => {
+          setScore(event.target.value);
+          setError("");
+        }}
+        placeholder="78"
+      />
+      {error && <p className="mt-3 text-sm font-semibold text-danger-500">{error}</p>}
+      <div className="mt-5 flex gap-3">
+        <SecondaryButton className="flex-1" onClick={onClose}>
+          Cancel
+        </SecondaryButton>
+        <PrimaryButton className="flex-1" onClick={submit}>
+          Save grade
+        </PrimaryButton>
+      </div>
+    </Modal>
+  );
+}
+
+function buildStudentAverageTrend(students, assignments) {
+  const graded = assignments.filter(
+    (item) =>
+      item.status === "Graded" &&
+      item.score != null &&
+      item.score !== "" &&
+      Number.isFinite(Number(item.score)),
+  );
+  const lines = students
+    .map((student) => {
+      const points = graded
+        .filter((item) => item.studentId === student.id)
+        .slice()
+        .sort((a, b) => String(a.due).localeCompare(String(b.due)));
+      let sum = 0;
+      const series = points.map((item, index) => {
+        sum += Number(item.score);
+        return { due: item.due, average: Math.round((sum / (index + 1)) * 10) / 10 };
+      });
+      return { name: student.name, series };
+    })
+    .filter((line) => line.series.length > 0);
+
+  const dates = [...new Set(lines.flatMap((line) => line.series.map((point) => point.due)))].sort();
+  const data = dates.map((due) => {
+    const row = { due };
+    lines.forEach((line) => {
+      const point = line.series.find((entry) => entry.due === due);
+      if (point) row[line.name] = point.average;
+    });
+    return row;
+  });
+
+  return { data, lines: lines.map((line) => line.name) };
 }
 
 function AddStudentModal({ onClose, store, push }) {
