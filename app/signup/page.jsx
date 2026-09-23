@@ -75,6 +75,8 @@ export default function SignUpPage() {
           ? "That email already has an account — try signing in instead."
           : err?.code === "auth/weak-password"
           ? "Password should be at least 6 characters."
+          : err?.code === "permission-denied"
+          ? "Account created, but Firestore permissions need to be configured."
           : "Something went wrong creating your account. Please try again."
       );
     } finally {
