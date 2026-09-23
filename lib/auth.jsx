@@ -1,66 +1,73 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  updateProfile,
+} from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 
 const AuthContext = createContext(null);
-const USER_STORAGE_KEY = "tutortrack-user";
 
-const roleNames = {
-  tutor: "Mr. Adewale",
-  student: "Blessing",
-  parent: "Mrs. Nwachukwu",
-};
-
-function getSavedUser() {
+async function fetchProfile(uid) {
   try {
-    const savedUser = window.localStorage.getItem(USER_STORAGE_KEY);
-    return savedUser ? JSON.parse(savedUser) : null;
+    const snap = await getDoc(doc(db, "users", uid));
+    return snap.exists() ? snap.data() : null;
   } catch {
     return null;
   }
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(getSavedUser);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const savedUser = window.localStorage.getItem(USER_STORAGE_KEY);
-      if (savedUser) {
-        setUser(JSON.parse(savedUser));
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!firebaseUser) {
+        setUser(null);
+        setLoading(false);
+        return;
       }
-    } catch {
-      setUser(null);
-    }
+      const profile = await fetchProfile(firebaseUser.uid);
+      setUser({
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        name: firebaseUser.displayName || profile?.name || "",
+        role: profile?.role || "tutor",
+        cv: profile?.cv || null,
+      });
+      setLoading(false);
+    });
+    return unsubscribe;
   }, []);
 
-  useEffect(() => {
-    try {
-      if (user) {
-        window.localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
-      } else {
-        window.localStorage.removeItem(USER_STORAGE_KEY);
-      }
-    } catch {
-      // Storage may be unavailable in private browsing or restricted environments.
-    }
-  }, [user]);
-
-  const signIn = (role, name, extra = {}) => {
+  const signUp = async ({ email, password, name, role, cv }) => {
+    const { user: firebaseUser } = await createUserWithEmailAndPassword(auth, email, password);
     const trimmedName = typeof name === "string" ? name.trim() : "";
-    const resolvedName = trimmedName || (roleNames[role] ?? roleNames.tutor);
-    const extraData = extra && typeof extra === "object" ? (extra.cv ? extra : { cv: extra }) : {};
-    setUser((prev) => ({
-      ...(prev || {}),
+    if (trimmedName) {
+      await updateProfile(firebaseUser, { displayName: trimmedName });
+    }
+    await setDoc(doc(db, "users", firebaseUser.uid), {
+      name: trimmedName,
       role,
-      name: resolvedName,
-      ...extraData,
-    }));
+      cv: cv || null,
+    });
+    // onAuthStateChanged will pick this up and populate `user` automatically.
   };
 
-  const signOut = () => setUser(null);
+  const signIn = async ({ email, password }) => {
+    await signInWithEmailAndPassword(auth, email, password);
+    // onAuthStateChanged will pick this up and populate `user` automatically.
+  };
 
-  const value = useMemo(() => ({ user, signIn, signOut }), [user]);
+  const signOut = () => firebaseSignOut(auth);
+
+  const value = useMemo(() => ({ user, loading, signUp, signIn, signOut }), [user, loading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

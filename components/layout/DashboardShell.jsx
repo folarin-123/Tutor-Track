@@ -24,8 +24,18 @@ const roleLinks = [
   { label: "Parent portal", icon: Users, to: "/parent", role: "parent" },
 ];
 
+// Pre-created demo accounts used only by "Switch preview." Create these once
+// via the real sign-up form (one tutor, one student, one parent) before
+// demoing, each with role set correctly.
+const DEMO_ACCOUNTS = {
+  tutor: { email: "demo.tutor@tutortrack.app", password: "demo1234" },
+  student: { email: "demo.student@tutortrack.app", password: "demo1234" },
+  parent: { email: "demo.parent@tutortrack.app", password: "demo1234" },
+};
+
 export default function DashboardShell({ children }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [switching, setSwitching] = useState(false);
   const { dark, toggleTheme } = useTheme();
   const { user, signIn, signOut } = useAuth();
   const { pathname } = useLocation();
@@ -34,6 +44,22 @@ export default function DashboardShell({ children }) {
   const handleSignOut = () => {
     signOut();
     navigate("/signin");
+  };
+
+  const handleSwitchRole = async (role, to) => {
+    if (user?.role === role) {
+      navigate(to);
+      return;
+    }
+    setSwitching(true);
+    try {
+      await signIn(DEMO_ACCOUNTS[role]);
+      navigate(to);
+    } catch {
+      // Demo account for this role doesn't exist yet — nothing to do but stay put.
+    } finally {
+      setSwitching(false);
+    }
   };
 
   const accountLabel = user ? `${capitalize(user.role)} account` : "Not signed in";
@@ -51,7 +77,7 @@ export default function DashboardShell({ children }) {
             >
               {menuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
-            <Link href="/" className="flex items-center gap-2 font-extrabold tracking-tight">
+            <Link to="/" className="flex items-center gap-2 font-extrabold tracking-tight">
               <span className="grid h-8 w-8 place-items-center rounded-full bg-primary-500 text-white">
                 <GraduationCap size={18} />
               </span>
@@ -98,11 +124,9 @@ export default function DashboardShell({ children }) {
           menuOpen={menuOpen}
           closeMenu={() => setMenuOpen(false)}
           pathname={pathname}
-          onSwitchRole={(role, to) => {
-            signIn(role, user?.name);
-            navigate(to);
-          }}
+          onSwitchRole={handleSwitchRole}
           onSignOut={handleSignOut}
+          switching={switching}
         />
         <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
@@ -110,7 +134,7 @@ export default function DashboardShell({ children }) {
   );
 }
 
-function Sidebar({ menuOpen, closeMenu, pathname, onSwitchRole, onSignOut }) {
+function Sidebar({ menuOpen, closeMenu, pathname, onSwitchRole, onSignOut, switching }) {
   const visibility = menuOpen ? "fixed inset-x-0 top-16 z-20 block px-4" : "hidden";
   return (
     <>
@@ -135,11 +159,12 @@ function Sidebar({ menuOpen, closeMenu, pathname, onSwitchRole, onSignOut }) {
               <button
                 key={to}
                 type="button"
+                disabled={switching}
                 onClick={() => {
                   onSwitchRole(role, to);
                   closeMenu();
                 }}
-                className={`flex w-full items-center gap-3 rounded-full border-0 bg-transparent px-3 py-2.5 text-left text-sm font-medium ${
+                className={`flex w-full items-center gap-3 rounded-full border-0 bg-transparent px-3 py-2.5 text-left text-sm font-medium disabled:opacity-50 ${
                   isActive
                     ? "bg-primary-100 text-primary-700"
                     : "text-[var(--text-secondary)] hover:bg-[var(--bg-surface-muted)]"

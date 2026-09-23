@@ -28,7 +28,8 @@ export default function SignUpPage() {
   const [password, setPassword] = useState("");
   const [cv, setCv] = useState(null);
   const [error, setError] = useState("");
-  const { signIn } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
+  const { signUp } = useAuth();
   const navigate = useNavigate();
   const content = roleCopy[role];
 
@@ -46,7 +47,7 @@ export default function SignUpPage() {
     }
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const missingCv = role === "tutor" && !cv;
     if (!name.trim() || !email.trim() || !password.trim() || missingCv) {
@@ -58,8 +59,27 @@ export default function SignUpPage() {
       return;
     }
     setError("");
-    signIn(role, name.trim(), role === "tutor" && cv ? { cv } : undefined);
-    navigate(`/${role}`);
+    setSubmitting(true);
+    try {
+      await signUp({
+        email: email.trim(),
+        password,
+        name: name.trim(),
+        role,
+        cv: role === "tutor" ? cv : null,
+      });
+      navigate(`/${role}`);
+    } catch (err) {
+      setError(
+        err?.code === "auth/email-already-in-use"
+          ? "That email already has an account — try signing in instead."
+          : err?.code === "auth/weak-password"
+          ? "Password should be at least 6 characters."
+          : "Something went wrong creating your account. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -67,7 +87,7 @@ export default function SignUpPage() {
       <RoleSelector role={role} onChange={setRole} />
       <h1 className="mt-8 text-3xl font-extrabold tracking-tight">{content.title}</h1>
       <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
-        {content.description} This prototype accepts any email and password.
+        {content.description}
       </p>
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <label className="block text-sm font-bold" htmlFor="signup-name">
@@ -98,7 +118,7 @@ export default function SignUpPage() {
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            placeholder="Anything works here"
+            placeholder="At least 6 characters"
             className="mt-2 w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 font-normal outline-primary-500"
           />
         </label>
@@ -122,9 +142,10 @@ export default function SignUpPage() {
         {error && <p className="text-sm font-semibold text-danger-500">{error}</p>}
         <button
           type="submit"
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-primary-500 py-3.5 font-bold text-white"
+          disabled={submitting}
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-primary-500 py-3.5 font-bold text-white disabled:opacity-60"
         >
-          Create account <ArrowRight size={17} />
+          {submitting ? "Creating account…" : "Create account"} <ArrowRight size={17} />
         </button>
       </form>
       <p className="mt-6 text-center text-sm text-[var(--text-secondary)]">

@@ -5,10 +5,11 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 
 export default function RequireRole({ role, children }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (loading) return;
     if (!user) {
       navigate("/signin", { replace: true });
       return;
@@ -16,9 +17,9 @@ export default function RequireRole({ role, children }) {
     if (user.role !== role) {
       navigate(`/${user.role}`, { replace: true });
     }
-  }, [user, role, navigate]);
+  }, [user, loading, role, navigate]);
 
-  if (!user || user.role !== role) {
+  if (loading || !user || user.role !== role) {
     return null;
   }
 
