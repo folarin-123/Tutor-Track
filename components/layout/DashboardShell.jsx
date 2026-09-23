@@ -24,42 +24,16 @@ const roleLinks = [
   { label: "Parent portal", icon: Users, to: "/parent", role: "parent" },
 ];
 
-// Pre-created demo accounts used only by "Switch preview." Create these once
-// via the real sign-up form (one tutor, one student, one parent) before
-// demoing, each with role set correctly.
-const DEMO_ACCOUNTS = {
-  tutor: { email: "demo.tutor@tutortrack.app", password: "demo1234" },
-  student: { email: "demo.student@tutortrack.app", password: "demo1234" },
-  parent: { email: "demo.parent@tutortrack.app", password: "demo1234" },
-};
-
 export default function DashboardShell({ children }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [switching, setSwitching] = useState(false);
   const { dark, toggleTheme } = useTheme();
-  const { user, signIn, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
   const handleSignOut = () => {
     signOut();
     navigate("/signin");
-  };
-
-  const handleSwitchRole = async (role, to) => {
-    if (user?.role === role) {
-      navigate(to);
-      return;
-    }
-    setSwitching(true);
-    try {
-      await signIn(DEMO_ACCOUNTS[role]);
-      navigate(to);
-    } catch {
-      // Demo account for this role doesn't exist yet — nothing to do but stay put.
-    } finally {
-      setSwitching(false);
-    }
   };
 
   const accountLabel = user ? `${capitalize(user.role)} account` : "Not signed in";
@@ -124,9 +98,8 @@ export default function DashboardShell({ children }) {
           menuOpen={menuOpen}
           closeMenu={() => setMenuOpen(false)}
           pathname={pathname}
-          onSwitchRole={handleSwitchRole}
+          role={user?.role}
           onSignOut={handleSignOut}
-          switching={switching}
         />
         <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
@@ -134,8 +107,9 @@ export default function DashboardShell({ children }) {
   );
 }
 
-function Sidebar({ menuOpen, closeMenu, pathname, onSwitchRole, onSignOut, switching }) {
+function Sidebar({ menuOpen, closeMenu, pathname, role, onSignOut }) {
   const visibility = menuOpen ? "fixed inset-x-0 top-16 z-20 block px-4" : "hidden";
+  const visibleRoleLinks = roleLinks.filter((item) => item.role === role);
   return (
     <>
       {menuOpen && (
@@ -150,21 +124,17 @@ function Sidebar({ menuOpen, closeMenu, pathname, onSwitchRole, onSignOut, switc
         className={`${visibility} z-20 w-full rounded-b-3xl bg-[var(--bg-surface)] pb-4 shadow-xl lg:sticky lg:top-16 lg:z-0 lg:block lg:h-[calc(100vh-4rem)] lg:w-64 lg:shrink-0 lg:rounded-none lg:border-r lg:border-[var(--border-default)] lg:bg-transparent lg:px-5 lg:py-7 lg:shadow-none`}
       >
         <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[.18em] text-[var(--text-muted)]">
-          Switch preview
+          Your portal
         </p>
         <nav className="space-y-1">
-          {roleLinks.map(({ label, icon: Icon, to, role }) => {
+          {visibleRoleLinks.map(({ label, icon: Icon, to }) => {
             const isActive = pathname?.startsWith(to);
             return (
-              <button
+              <Link
                 key={to}
-                type="button"
-                disabled={switching}
-                onClick={() => {
-                  onSwitchRole(role, to);
-                  closeMenu();
-                }}
-                className={`flex w-full items-center gap-3 rounded-full border-0 bg-transparent px-3 py-2.5 text-left text-sm font-medium disabled:opacity-50 ${
+                to={to}
+                onClick={closeMenu}
+                className={`flex w-full items-center gap-3 rounded-full px-3 py-2.5 text-sm font-medium ${
                   isActive
                     ? "bg-primary-100 text-primary-700"
                     : "text-[var(--text-secondary)] hover:bg-[var(--bg-surface-muted)]"
@@ -172,7 +142,7 @@ function Sidebar({ menuOpen, closeMenu, pathname, onSwitchRole, onSignOut, switc
               >
                 <Icon size={18} />
                 {label}
-              </button>
+              </Link>
             );
           })}
         </nav>
