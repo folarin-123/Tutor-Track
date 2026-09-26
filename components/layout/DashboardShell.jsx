@@ -73,6 +73,16 @@ export default function DashboardShell({ children }) {
                 <div className="hidden text-right sm:block">
                   <p className="text-sm font-semibold">{user.name}</p>
                   <p className="text-[11px] text-[var(--text-secondary)]">{accountLabel}</p>
+                  {user.uid && (
+                    <button
+                      type="button"
+                      onClick={() => navigator.clipboard?.writeText(user.uid)}
+                      className="text-[10px] font-medium text-primary-600"
+                      title="Copy account ID for messaging"
+                    >
+                      ID: {user.uid.slice(0, 8)}…
+                    </button>
+                  )}
                   {user.cv && (
                     <p className="text-[10px] font-medium text-primary-600">
                       CV: {user.cv.name} ({user.cv.sizeKB} KB)

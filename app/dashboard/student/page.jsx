@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { CalendarDays, FileUp, MessageCircle } from "lucide-react";
 import ScrollableTabs from "@/components/common/ScrollableTabs";
-import { EmptyState, MessageThread, Panel } from "@/components/common/Primitives";
+import { EmptyState } from "@/components/common/Primitives";
+import MessagingPanel from "@/components/messaging/MessagingPanel";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/lib/toast";
 import { useAuth } from "@/lib/auth";
@@ -28,7 +29,7 @@ export default function StudentPage() {
           </p>
         </div>
         <button
-          onClick={() => push("Message thread opened.")}
+          onClick={() => setTab("Messages")}
           className="inline-flex items-center gap-2 rounded-full bg-primary-900 px-4 py-3 text-sm font-bold text-white"
         >
           <MessageCircle size={17} />
@@ -40,7 +41,7 @@ export default function StudentPage() {
       </div>
       {tab === "My plan" && <Plan store={store} />}
       {tab === "Assignments" && <Assignments store={store} push={push} />}
-      {tab === "Messages" && <Messages store={store} push={push} sender={user?.name ?? "Student"} />}
+      {tab === "Messages" && <Messages user={user} />}
     </section>
   );
 }
@@ -123,74 +124,8 @@ function Assignments({ store, push }) {
   );
 }
 
-function Messages({ store, push, sender }) {
-  const defaultStudent =
-    store.students.find(
-      (s) =>
-        s.id === store.students[0]?.id ||
-        (sender && s.name.toLowerCase() === sender.toLowerCase()),
-    ) || store.students[0];
-  const [selectedStudentId, setSelectedStudentId] = useState(defaultStudent?.id || "");
-
-  const activeStudent =
-    store.students.find((s) => s.id === (selectedStudentId || defaultStudent?.id)) ||
-    defaultStudent;
-
-  const studentMessages = activeStudent
-    ? store.messages.filter(
-        (m) => m.studentId === activeStudent.id && (m.channel === "student" || !m.channel),
-      )
-    : [];
-
-  const handleSend = (body) => {
-    if (!activeStudent) return;
-    store.sendMessage({
-      studentId: activeStudent.id,
-      channel: "student",
-      from: sender,
-      to: "Tutor",
-      body,
-    });
-    push("Message sent.");
-  };
-
-  return (
-    <div className="mt-6">
-      <MessageThread
-        messages={studentMessages}
-        currentSender={sender}
-        onSend={handleSend}
-        placeholder="Ask your tutor a question"
-        emptyText="No messages yet. Send your tutor a question."
-        header={
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-default)] pb-4">
-            <div>
-              <p className="text-sm font-bold">Your conversation with your tutor</p>
-              {activeStudent && (
-                <p className="text-xs text-[var(--text-secondary)]">Student: {activeStudent.name}</p>
-              )}
-            </div>
-            {store.students.length > 1 && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-[var(--text-secondary)]">Student:</span>
-                <select
-                  value={activeStudent?.id}
-                  onChange={(e) => setSelectedStudentId(e.target.value)}
-                  className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-semibold outline-primary-500"
-                >
-                  {store.students.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
-        }
-      />
-    </div>
-  );
+function Messages({ user }) {
+  return <MessagingPanel role="student" user={user} />;
 }
 
 function Card({ title, children }) {

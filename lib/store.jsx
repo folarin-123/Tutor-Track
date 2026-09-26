@@ -159,6 +159,8 @@ export function StoreProvider({ children }) {
       grade: input.grade || "Not set",
       status: "Active",
       note: input.note || "",
+      uid: input.uid || "",
+      parentUid: input.parentUid || "",
     };
     setStudents((list) => [...list, student]);
     return student;
@@ -222,6 +224,12 @@ export function StoreProvider({ children }) {
     );
   }, []);
 
+  const updateStudent = useCallback((id, patch) => {
+    setStudents((list) =>
+      list.map((item) => (item.id === id ? { ...item, ...patch } : item)),
+    );
+  }, []);
+
   const sendMessage = useCallback((input) => {
     const message = {
       id: makeId("M"),
@@ -252,6 +260,7 @@ export function StoreProvider({ children }) {
       payments,
       messages,
       addStudent,
+      updateStudent,
       addSession,
       addAssignment,
       gradeAssignment,
@@ -267,6 +276,7 @@ export function StoreProvider({ children }) {
       payments,
       messages,
       addStudent,
+      updateStudent,
       addSession,
       addAssignment,
       gradeAssignment,

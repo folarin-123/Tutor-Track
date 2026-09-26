@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -7,19 +6,20 @@ import {
   Calendar,
   CalendarDays,
   CheckCircle2,
+  CheckSquare,
   Clock,
   FileText,
   GraduationCap,
   Mail,
   Menu,
+  MessageCircle,
   Moon,
   ShieldCheck,
   Sparkles,
   Sun,
+  TrendingUp,
   Users,
   X,
-  TrendingUp,
-  CheckSquare,
 } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 import { FadeIn, FadeUp, FloatCard } from "@/components/motion/Reveal";
@@ -112,7 +112,6 @@ const roles = [
 
 export default function LandingPage() {
   const { dark, toggleTheme } = useTheme();
-
   return (
     <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] antialiased transition-colors duration-200">
       <LandingHeader dark={dark} onToggleTheme={toggleTheme} />
@@ -120,6 +119,7 @@ export default function LandingPage() {
         <Hero />
         <ProblemSection />
         <FeatureHighlightsSection />
+        <MessagingSection />
         <RolePreviewSection />
       </main>
       <LandingFooter />
@@ -149,6 +149,9 @@ function LandingHeader({ dark, onToggleTheme }) {
           <a href="#features" className="hover:text-primary-500 transition-colors">
             Features
           </a>
+          <a href="#messaging" className="hover:text-primary-500 transition-colors">
+            Messaging
+          </a>
           <a href="#action" className="hover:text-primary-500 transition-colors">
             Role Portals
           </a>
@@ -162,7 +165,7 @@ function LandingHeader({ dark, onToggleTheme }) {
             aria-pressed={dark}
             className="grid h-9 w-9 place-items-center rounded-lg border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] bg-[var(--bg-surface)] transition-all cursor-pointer"
           >
-            {dark ? <Sun size={17} /> : <Moon size={17} />}
+            {dark ? <Sun size={16} /> : <Moon size={16} />}
           </button>
 
           <Link
@@ -206,6 +209,13 @@ function LandingHeader({ dark, onToggleTheme }) {
               className="px-3 py-2 rounded-lg hover:bg-[var(--bg-surface-muted)]"
             >
               Features
+            </a>
+            <a
+              href="#messaging"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2 rounded-lg hover:bg-[var(--bg-surface-muted)]"
+            >
+              Messaging
             </a>
             <a
               href="#action"
@@ -478,6 +488,71 @@ function FeatureHighlightsSection() {
   );
 }
 
+function MessagingSection() {
+  return (
+    <section id="messaging" className="border-b border-[var(--border-default)] bg-[var(--bg-surface-muted)]/20 py-16 sm:py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid items-center gap-12 lg:grid-cols-2">
+          <FadeUp>
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-primary-50/80 px-3 py-1 text-xs font-semibold text-primary-700 dark:border-primary-800/60 dark:bg-primary-950/40 dark:text-primary-300">
+              <MessageCircle size={14} className="text-primary-500" />
+              <span>In-App Messaging</span>
+            </div>
+            <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-[var(--text-primary)] sm:text-3xl lg:text-4xl">
+              Talk to your tutor without leaving TutorTrack.
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-[var(--text-secondary)] sm:text-base">
+              Real-time conversations between tutors and students, with a separate parent thread when a family needs to be involved. Messages stay with the practice, not in a private chat history nobody else can find.
+            </p>
+          </FadeUp>
+          <FadeUp delay={0.1}>
+            <div className="overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] shadow-lg">
+              <div className="grid sm:grid-cols-[13rem_minmax(0,1fr)]">
+                <div className="border-b border-[var(--border-default)] p-3 sm:border-b-0 sm:border-r">
+                  <p className="px-2 text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Inbox</p>
+                  <div className="mt-2 flex items-center gap-2 rounded-lg bg-primary-50/80 p-2 dark:bg-primary-950/40">
+                    <span className="relative grid h-8 w-8 place-items-center rounded-full bg-primary-100 text-[11px] font-bold text-primary-700 dark:bg-primary-900/50 dark:text-primary-300">
+                      AO
+                      <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-[var(--bg-surface)]" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-bold text-[var(--text-primary)]">Amara Okafor</p>
+                      <p className="truncate text-[11px] text-[var(--text-secondary)]">Question on question 4…</p>
+                    </div>
+                    <span className="ml-auto rounded-full bg-primary-500 px-1.5 text-[10px] font-bold text-white">1</span>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <div className="flex items-center gap-2 border-b border-[var(--border-default)] pb-3">
+                    <span className="grid h-8 w-8 place-items-center rounded-full bg-primary-100 text-[11px] font-bold text-primary-700 dark:bg-primary-900/50 dark:text-primary-300">AO</span>
+                    <div>
+                      <p className="text-sm font-bold text-[var(--text-primary)]">Amara Okafor</p>
+                      <p className="text-[11px] text-[var(--text-secondary)]">Student thread</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 space-y-3">
+                    <div className="max-w-[80%] rounded-2xl rounded-bl-md bg-[var(--bg-surface-muted)] px-3 py-2 text-xs leading-5 text-[var(--text-primary)]">
+                      I had a question on question 4 of the algebra practice set.
+                      <p className="mt-1 text-[10px] text-[var(--text-muted)]">2h ago</p>
+                    </div>
+                    <div className="ml-auto max-w-[80%] rounded-2xl rounded-br-md bg-primary-500 px-3 py-2 text-xs leading-5 text-white">
+                      Let’s review the quadratic formula together in our next session.
+                      <p className="mt-1 text-[10px] text-primary-100">1h ago</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 rounded-xl border border-[var(--border-default)] px-3 py-2 text-xs text-[var(--text-muted)] bg-[var(--bg-page)]">
+                    Write a message...
+                  </div>
+                </div>
+              </div>
+            </div>
+          </FadeUp>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function RolePreviewSection() {
   return (
     <section id="action" className="border-b border-[var(--border-default)] bg-[var(--bg-surface-muted)]/30 py-16 sm:py-20">
@@ -575,6 +650,7 @@ function LandingFooter() {
                 <ul className="space-y-2 text-[var(--text-secondary)]">
                   <li><a href="#why" className="hover:text-primary-500">Why TutorTrack</a></li>
                   <li><a href="#features" className="hover:text-primary-500">Features</a></li>
+                  <li><a href="#messaging" className="hover:text-primary-500">Messaging</a></li>
                   <li><a href="#action" className="hover:text-primary-500">Role Portals</a></li>
                 </ul>
               </div>
