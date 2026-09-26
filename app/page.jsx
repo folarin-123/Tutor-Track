@@ -24,7 +24,6 @@ import {
   Wallet,
   X,
 } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
 import { useTheme } from "@/lib/theme";
 import { FadeIn, FadeUp, FloatCard } from "@/components/motion/Reveal";
 
@@ -386,13 +385,6 @@ function HeroDashboardPreview() {
               Start Session
             </button>
           </div>
-          <span className="rounded-md bg-primary-100 px-2 py-1 text-[11px] font-medium text-primary-700">Live preview</span>
-        </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <PreviewCard label="Upcoming session" value="Quadratic equations" detail="Thu · 16:00–17:00" />
-          <PreviewCard label="Student progress" value="Amara · 80 avg" detail="Three graded assignments" />
-          <PreviewCard label="Assignment status" value="2 ready to grade" detail="Submitted this week" />
-          <PreviewCard label="Payment status" value="$220 due" detail="September tuition" />
         </div>
 
         {/* Dashboard Quick Widgets Grid */}
@@ -468,58 +460,6 @@ function ValueStrip() {
 }
 
 function ProblemSection() {
-  const problems = [
-    "Sessions scattered across calendars and chats",
-    "Assignments lost inside conversations",
-    "Parents asking repeatedly for progress updates",
-    "Payment tracking being manual",
-    "Communication split between multiple apps",
-  ];
-  return (
-    <section id="features" className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-      <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
-        <FadeUp>
-          <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary-600">The problem</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight">Tutoring work is simple. The admin around it is not.</h2>
-          <ul className="mt-6 space-y-3">
-            {problems.map((item) => (
-              <li key={item} className="flex gap-3 text-sm leading-6 text-[var(--text-secondary)]">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary-400" />
-                {item}
-              </li>
-            ))}
-          </ul>
-        </FadeUp>
-        <FadeUp delay={0.08}>
-          <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-sm">
-            <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary-600">The solution</p>
-            <h3 className="mt-3 text-xl font-semibold">TutorTrack centralizes the practice.</h3>
-            <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
-              One workspace for the session, the assignment, the score, the invoice, and the conversation. Tutors keep the teaching. Families get a clear view without another status request.
-            </p>
-            <div className="mt-6 grid gap-2 text-sm">
-              {["Shared schedule", "Visible assignment status", "Progress charts", "In-app messaging"].map((item) => (
-                <p key={item} className="flex items-center gap-2">
-                  <Check size={15} className="text-primary-500" /> {item}
-                </p>
-              ))}
-            </div>
-          </div>
-        </FadeUp>
-      </div>
-    </section>
-  );
-}
-
-function FeaturesSection() {
-  const features = [
-    { icon: CalendarDays, title: "Smart scheduling", copy: "Keep one-off and recurring sessions in a single calendar instead of chasing chat confirmations." },
-    { icon: ClipboardCheck, title: "Assignment management", copy: "Assign work, collect submissions, and record scores without hunting through old threads." },
-    { icon: LineChart, title: "Progress tracking", copy: "See how scores move over time so the next lesson is based on evidence, not guesswork." },
-    { icon: Wallet, title: "Payment tracking", copy: "Record what is due, mark what is paid, and keep a simple history for each family." },
-    { icon: MessageCircle, title: "Tutor/student messaging", copy: "Talk in real time inside TutorTrack, with a separate thread when a parent needs to join." },
-    { icon: Users, title: "Parent visibility", copy: "Give families a read-clear view of sessions, assignments, and progress without extra updates." },
-  ];
   return (
     <section id="why" className="border-b border-[var(--border-default)] bg-[var(--bg-surface-muted)]/40 py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -684,12 +624,7 @@ function MessagingSection() {
   );
 }
 
-function RolesSection() {
-  const roles = [
-    { id: "tutors", icon: GraduationCap, label: "Tutor", title: "Run your entire tutoring practice.", items: ["Schedule and roster", "Grade assignments", "Message students and parents"] },
-    { id: "students", icon: BookOpen, label: "Student", title: "Know exactly what to learn and what comes next.", items: ["Upcoming sessions", "Assignment status", "Direct tutor chat"] },
-    { id: "parents", icon: Users, label: "Parent", title: "Stay informed without constantly asking for updates.", items: ["Progress charts", "Payment status", "A dedicated tutor thread"] },
-  ];
+function RolePreviewSection() {
   return (
     <section id="action" className="border-b border-[var(--border-default)] bg-[var(--bg-surface-muted)]/30 py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -754,7 +689,7 @@ function RoleCard({ icon: Icon, label, badge, title, copy, href, action, items }
           <ArrowRight size={15} />
         </Link>
       </div>
-    </section>
+    </article>
   );
 }
 

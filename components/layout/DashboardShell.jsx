@@ -39,14 +39,14 @@ export default function DashboardShell({ children }) {
   const accountLabel = user ? `${capitalize(user.role)} account` : "Not signed in";
 
   return (
-    <div className="min-h-screen bg-(--bg-page)] text-(--text-primary)] transition-colors">
-      <header className="sticky top-0 z-30 border-b border-(--border-default)] bg-[var(--bg-surface)]/90 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-360 items-center justify-between px-4 sm:px-6">
+    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] transition-colors">
+      <header className="sticky top-0 z-30 border-b border-[var(--border-default)] bg-[var(--bg-surface)]/90 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setMenuOpen((open) => !open)}
-              className="rounded-full p-2 text-(--text-secondary)] lg:hidden"
+              className="rounded-full p-2 text-[var(--text-secondary)] lg:hidden"
               aria-label="Toggle navigation"
             >
               {menuOpen ? <X size={20} /> : <Menu size={20} />}
