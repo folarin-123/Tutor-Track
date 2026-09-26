@@ -76,8 +76,8 @@ export default function TutorPage() {
 
   return (
     <section className="mx-auto max-w-7xl">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="min-w-0 flex-1">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div className="w-full min-w-0 sm:flex-1">
           <p className="text-sm font-semibold text-primary-600">
             {user ? `Welcome back, ${user.name}.` : "Welcome back."}
           </p>
@@ -93,7 +93,7 @@ export default function TutorPage() {
             </p>
           )}
         </div>
-        <div className="flex flex-wrap justify-end gap-3">
+        <div className="flex w-full flex-wrap gap-2.5 sm:w-auto sm:justify-end">
           <SecondaryButton onClick={() => store.loadDemoData()}>
             Load demo data
           </SecondaryButton>
