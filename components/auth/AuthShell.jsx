@@ -1,4 +1,3 @@
-"use client";
 
 import { Link } from "react-router-dom";
 import { CheckCircle2, GraduationCap, Moon, Sun } from "lucide-react";

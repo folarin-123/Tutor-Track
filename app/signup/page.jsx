@@ -1,4 +1,3 @@
-"use client";
 
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -127,14 +126,14 @@ export default function SignUpPage() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               placeholder="A strong password"
-              className="w-full rounded-2xl border border-(--border-default)] bg-(--bg-surface)] px-4 py-3 pr-12 font-normal outline-primary-500"
+              className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 pr-12 font-normal outline-primary-500"
             />
             <button
               type="button"
               onClick={() => setShowPassword((visible) => !visible)}
               aria-label={showPassword ? "Hide password" : "Show password"}
               aria-pressed={showPassword}
-              className="absolute inset-y-0 right-3 grid w-9 place-items-center text-(--text-secondary)]"
+              className="absolute inset-y-0 right-3 grid w-9 place-items-center text-[var(--text-secondary)]"
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>

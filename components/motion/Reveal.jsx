@@ -1,44 +1,51 @@
-"use client";
-
-import { motion } from "motion/react";
+import React, { useEffect, useState } from "react";
 
 export function FadeUp({ children, delay = 0, className = "" }) {
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(query.matches);
+    const listener = (e) => setReducedMotion(e.matches);
+    query.addEventListener("change", listener);
+    return () => query.removeEventListener("change", listener);
+  }, []);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
-      className={className}
+    <div
+      className={`transition-all duration-300 ${
+        reducedMotion ? "" : "motion-safe:animate-fade-in-up"
+      } ${className}`}
+      style={{ animationDelay: `${delay}s` }}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 
 export function FadeIn({ children, delay = 0, className = "" }) {
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(query.matches);
+    const listener = (e) => setReducedMotion(e.matches);
+    query.addEventListener("change", listener);
+    return () => query.removeEventListener("change", listener);
+  }, []);
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.7, delay, ease: "easeOut" }}
-      className={className}
+    <div
+      className={`transition-opacity duration-300 ${
+        reducedMotion ? "" : "motion-safe:animate-fade-in"
+      } ${className}`}
+      style={{ animationDelay: `${delay}s` }}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 
 export function FloatCard({ children, className = "" }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.96, y: 20 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ y: -4 }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={className}>{children}</div>;
 }

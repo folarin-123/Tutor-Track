@@ -1,4 +1,3 @@
-"use client";
 
 import { ThemeProvider } from "@/lib/theme";
 import { ToastProvider } from "@/lib/toast";
