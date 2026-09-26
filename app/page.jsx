@@ -9,7 +9,6 @@ import {
   CheckSquare,
   ClipboardCheck,
   Clock,
-  FileText,
   GraduationCap,
   LineChart,
   Mail,
@@ -26,24 +25,6 @@ import {
 } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 import { FadeIn, FadeUp, FloatCard } from "@/components/motion/Reveal";
-
-const problems = [
-  {
-    icon: CalendarDays,
-    title: "Centralized Scheduling",
-    copy: "Manage all recurring, group, and 1-on-1 sessions without fragmented calendar invites or endless chat threads.",
-  },
-  {
-    icon: FileText,
-    title: "Streamlined Homework Hub",
-    copy: "Assign practice sheets, track submissions, and deliver actionable feedback with zero clutter.",
-  },
-  {
-    icon: Users,
-    title: "Automated Parent Transparency",
-    copy: "Give parents direct real-time visibility into student attendance, progress, and payment status.",
-  },
-];
 
 const features = [
   {
@@ -121,7 +102,6 @@ export default function LandingPage() {
       <main>
         <Hero />
         <ValueStrip />
-        <ProblemSection />
         <FeatureHighlightsSection />
         <HowItWorks />
         <MessagingSection />
@@ -149,17 +129,11 @@ function LandingHeader({ dark, onToggleTheme }) {
         </Link>
 
         <nav className="hidden items-center gap-8 text-sm font-semibold text-[var(--text-secondary)] md:flex">
-          <a href="#why" className="hover:text-primary-500 transition-colors">
-            Why TutorTrack
-          </a>
           <a href="#features" className="hover:text-primary-500 transition-colors">
             Features
           </a>
           <a href="#how-it-works" className="hover:text-primary-500 transition-colors">
             How It Works
-          </a>
-          <a href="#messaging" className="hover:text-primary-500 transition-colors">
-            Messaging
           </a>
           <a href="#action" className="hover:text-primary-500 transition-colors">
             Role Portals
@@ -206,13 +180,6 @@ function LandingHeader({ dark, onToggleTheme }) {
         <div className="border-b border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-4 sm:hidden">
           <div className="flex flex-col gap-3 font-semibold text-sm text-[var(--text-secondary)]">
             <a
-              href="#why"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-lg hover:bg-[var(--bg-surface-muted)]"
-            >
-              Why TutorTrack
-            </a>
-            <a
               href="#features"
               onClick={() => setMobileMenuOpen(false)}
               className="px-3 py-2 rounded-lg hover:bg-[var(--bg-surface-muted)]"
@@ -225,13 +192,6 @@ function LandingHeader({ dark, onToggleTheme }) {
               className="px-3 py-2 rounded-lg hover:bg-[var(--bg-surface-muted)]"
             >
               How It Works
-            </a>
-            <a
-              href="#messaging"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-lg hover:bg-[var(--bg-surface-muted)]"
-            >
-              Messaging
             </a>
             <a
               href="#action"
@@ -303,7 +263,7 @@ function Hero() {
                   Start free trial <ArrowRight size={16} />
                 </Link>
                 <a
-                  href="#why"
+                  href="#how-it-works"
                   className="inline-flex items-center justify-center rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-5 py-3 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-surface-muted)] transition-all"
                 >
                   See how it works
@@ -318,7 +278,7 @@ function Hero() {
                   <p className="text-xs text-[var(--text-secondary)]">Clarity for families</p>
                 </div>
                 <div>
-                  <p className="text-xl font-bold text-[var(--text-primary)]">0</p>
+                  <p className="text-xl font-bold text-[var(--text-primary)]">Zero</p>
                   <p className="text-xs text-[var(--text-secondary)]">Spreadsheet headaches</p>
                 </div>
                 <div>
@@ -459,40 +419,6 @@ function ValueStrip() {
   );
 }
 
-function ProblemSection() {
-  return (
-    <section id="why" className="border-b border-[var(--border-default)] bg-[var(--bg-surface-muted)]/40 py-16 sm:py-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <FadeUp className="mx-auto max-w-2xl text-center">
-          <p className="text-xs font-bold uppercase tracking-wider text-primary-600 dark:text-primary-400">
-            Designed for Modern Tutors
-          </p>
-          <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--text-primary)] sm:text-3xl lg:text-4xl">
-            Everything your practice needs, without the clutter
-          </h2>
-          <p className="mt-3 text-base text-[var(--text-secondary)]">
-            Stop relying on messaging apps, notebook notes, and scattered spreadsheets. TutorTrack keeps your practice organized in one professional interface.
-          </p>
-        </FadeUp>
-
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {problems.map(({ icon: Icon, title, copy }, index) => (
-            <FadeUp key={title} delay={index * 0.08}>
-              <article className="group h-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-sm hover:shadow-md hover:border-primary-300 transition-all">
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary-100 text-primary-700 dark:bg-primary-950/60 dark:text-primary-300 group-hover:bg-primary-500 group-hover:text-white transition-colors">
-                  <Icon size={20} />
-                </span>
-                <h3 className="mt-5 text-lg font-bold text-[var(--text-primary)]">{title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">{copy}</p>
-              </article>
-            </FadeUp>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function FeatureHighlightsSection() {
   return (
     <section id="features" className="border-b border-[var(--border-default)] py-16 sm:py-20">
@@ -573,7 +499,7 @@ function MessagingSection() {
               Talk to your tutor without leaving TutorTrack.
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-[var(--text-secondary)] sm:text-base">
-              Real-time conversations between tutors and students, with a separate parent thread when a family needs to be involved. Messages stay with the practice, not in a private chat history nobody else can find.
+              Direct conversations between tutors and students, with a separate parent thread when a family needs to be involved. Messages stay with the practice, not in a private chat history nobody else can find.
             </p>
           </FadeUp>
           <FadeUp delay={0.1}>
@@ -744,7 +670,6 @@ function LandingFooter() {
               <div>
                 <p className="font-bold text-[var(--text-primary)] uppercase tracking-wider mb-3">Navigation</p>
                 <ul className="space-y-2 text-[var(--text-secondary)]">
-                  <li><a href="#why" className="hover:text-primary-500">Why TutorTrack</a></li>
                   <li><a href="#features" className="hover:text-primary-500">Features</a></li>
                   <li><a href="#how-it-works" className="hover:text-primary-500">How It Works</a></li>
                   <li><a href="#messaging" className="hover:text-primary-500">Messaging</a></li>
