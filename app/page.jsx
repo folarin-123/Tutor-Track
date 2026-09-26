@@ -7,9 +7,11 @@ import {
   CalendarDays,
   CheckCircle2,
   CheckSquare,
+  ClipboardCheck,
   Clock,
   FileText,
   GraduationCap,
+  LineChart,
   Mail,
   Menu,
   MessageCircle,
@@ -19,6 +21,7 @@ import {
   Sun,
   TrendingUp,
   Users,
+  Wallet,
   X,
 } from "lucide-react";
 import { useTheme } from "@/lib/theme";
@@ -117,10 +120,13 @@ export default function LandingPage() {
       <LandingHeader dark={dark} onToggleTheme={toggleTheme} />
       <main>
         <Hero />
+        <ValueStrip />
         <ProblemSection />
         <FeatureHighlightsSection />
+        <HowItWorks />
         <MessagingSection />
         <RolePreviewSection />
+        <FinalCta />
       </main>
       <LandingFooter />
     </div>
@@ -148,6 +154,9 @@ function LandingHeader({ dark, onToggleTheme }) {
           </a>
           <a href="#features" className="hover:text-primary-500 transition-colors">
             Features
+          </a>
+          <a href="#how-it-works" className="hover:text-primary-500 transition-colors">
+            How It Works
           </a>
           <a href="#messaging" className="hover:text-primary-500 transition-colors">
             Messaging
@@ -209,6 +218,13 @@ function LandingHeader({ dark, onToggleTheme }) {
               className="px-3 py-2 rounded-lg hover:bg-[var(--bg-surface-muted)]"
             >
               Features
+            </a>
+            <a
+              href="#how-it-works"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2 rounded-lg hover:bg-[var(--bg-surface-muted)]"
+            >
+              How It Works
             </a>
             <a
               href="#messaging"
@@ -421,6 +437,28 @@ function HeroDashboardPreview() {
   );
 }
 
+function ValueStrip() {
+  const items = [
+    { icon: CalendarDays, label: "Scheduling" },
+    { icon: ClipboardCheck, label: "Assignments" },
+    { icon: LineChart, label: "Progress tracking" },
+    { icon: Wallet, label: "Payments" },
+    { icon: MessageCircle, label: "Messaging" },
+  ];
+  return (
+    <section className="border-b border-[var(--border-default)] bg-[var(--bg-surface)]">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-5 sm:px-6 lg:px-8">
+        {items.map(({ icon: Icon, label }) => (
+          <div key={label} className="flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)]">
+            <Icon size={16} className="text-primary-500" />
+            {label}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function ProblemSection() {
   return (
     <section id="why" className="border-b border-[var(--border-default)] bg-[var(--bg-surface-muted)]/40 py-16 sm:py-20">
@@ -479,6 +517,39 @@ function FeatureHighlightsSection() {
                 <p className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">
                   {description}
                 </p>
+              </div>
+            </FadeUp>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HowItWorks() {
+  const steps = [
+    { n: "01", title: "Create your tutoring space", copy: "Sign up as a tutor, student, or parent and land in a workspace built for that role." },
+    { n: "02", title: "Add students and organize learning", copy: "Bring the roster, sessions, and assignments into one place so the week is visible." },
+    { n: "03", title: "Communicate, track progress and manage payments", copy: "Message in real time, record scores, and keep payment status next to the work." },
+  ];
+  return (
+    <section id="how-it-works" className="border-b border-[var(--border-default)] py-16 sm:py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <FadeUp>
+          <p className="text-xs font-bold uppercase tracking-wider text-primary-600 dark:text-primary-400">
+            How it works
+          </p>
+          <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--text-primary)] sm:text-3xl lg:text-4xl">
+            A calmer path from first student to a running practice.
+          </h2>
+        </FadeUp>
+        <div className="mt-12 grid gap-6 lg:grid-cols-3">
+          {steps.map((step, index) => (
+            <FadeUp key={step.n} delay={index * 0.08}>
+              <div className="relative h-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-sm">
+                <p className="text-sm font-bold text-primary-500">{step.n}</p>
+                <h3 className="mt-4 text-lg font-bold text-[var(--text-primary)]">{step.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)]">{step.copy}</p>
               </div>
             </FadeUp>
           ))}
@@ -622,6 +693,31 @@ function RoleCard({ icon: Icon, label, badge, title, copy, href, action, items }
   );
 }
 
+function FinalCta() {
+  return (
+    <section className="border-b border-[var(--border-default)] bg-primary-900 text-white py-16">
+      <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-6 px-4 sm:px-6 lg:px-8 lg:flex-row lg:items-center">
+        <div>
+          <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl text-white">
+            Give your tutoring practice a calmer workflow.
+          </h2>
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-primary-100">
+            Create a space for tutors, students, and parents to share the same schedule, scores, and conversations.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <Link to="/signup" className="rounded-lg bg-white px-5 py-3 text-sm font-bold text-primary-900 hover:bg-primary-50 transition-colors">
+            Get started
+          </Link>
+          <Link to="/signin" className="rounded-lg border border-white/20 px-5 py-3 text-sm font-bold text-white hover:bg-white/10 transition-colors">
+            Sign in
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function LandingFooter() {
   return (
     <footer className="bg-[var(--bg-surface)] py-12">
@@ -650,6 +746,7 @@ function LandingFooter() {
                 <ul className="space-y-2 text-[var(--text-secondary)]">
                   <li><a href="#why" className="hover:text-primary-500">Why TutorTrack</a></li>
                   <li><a href="#features" className="hover:text-primary-500">Features</a></li>
+                  <li><a href="#how-it-works" className="hover:text-primary-500">How It Works</a></li>
                   <li><a href="#messaging" className="hover:text-primary-500">Messaging</a></li>
                   <li><a href="#action" className="hover:text-primary-500">Role Portals</a></li>
                 </ul>
