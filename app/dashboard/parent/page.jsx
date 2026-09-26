@@ -1,4 +1,3 @@
-"use client";
 
 import { useMemo, useState } from "react";
 import { Bell, CalendarDays, CircleDollarSign, MessageCircle } from "lucide-react";
@@ -18,7 +17,7 @@ import { useToast } from "@/lib/toast";
 import { useAuth } from "@/lib/auth";
 
 const tabs = ["Overview", "Assignments", "Payments", "Messages"];
-const money = (n) => `$${Number(n || 0).toLocaleString("en-US")}`;
+const money = (n) => `₦${Number(n || 0).toLocaleString("en-NG")}`;
 
 export default function ParentPage() {
   const [tab, setTab] = useState("Overview");

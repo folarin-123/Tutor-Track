@@ -1,4 +1,3 @@
-"use client";
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -17,6 +16,7 @@ import { useState } from "react";
 import { useTheme } from "@/lib/theme";
 import { useAuth } from "@/lib/auth";
 import { Avatar } from "@/components/common/Primitives";
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 
 const roleLinks = [
   { label: "Tutor space", icon: GraduationCap, to: "/tutor", role: "tutor" },
@@ -101,8 +101,9 @@ export default function DashboardShell({ children }) {
           role={user?.role}
           onSignOut={handleSignOut}
         />
-        <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+        <main className="min-w-0 flex-1 p-4 pb-20 sm:p-6 lg:p-8 lg:pb-8">{children}</main>
       </div>
+      <MobileBottomNav role={user?.role || "tutor"} />
     </div>
   );
 }

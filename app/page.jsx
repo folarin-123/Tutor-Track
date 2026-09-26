@@ -1,4 +1,3 @@
-"use client";
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -254,7 +253,10 @@ function Hero() {
             </FadeUp>
 
             <FadeUp delay={0.06}>
-              <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-[var(--text-primary)] sm:text-4xl lg:text-5xl lg:leading-[1.12]">
+              <h1
+                className="mt-4 font-extrabold tracking-tight text-[var(--text-primary)] leading-[1.15]"
+                style={{ fontSize: "clamp(1.9rem, 3.4vw, 3.25rem)" }}
+              >
                 Organize your sessions, assignments, and parents{" "}
                 <span className="text-primary-500">in one calm command center.</span>
               </h1>
@@ -348,7 +350,7 @@ function HeroDashboardPreview() {
               <p className="font-bold text-[var(--text-primary)] text-sm sm:text-base">
                 A-Level Maths • Pure Calculus
               </p>
-              <p className="text-[var(--text-secondary)] text-xs">Student: Alex M. (Year 13)</p>
+              <p className="text-[var(--text-secondary)] text-xs">Student: Alex M. (SS3)</p>
             </div>
             <button
               type="button"

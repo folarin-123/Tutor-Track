@@ -1,4 +1,3 @@
-"use client";
 
 import { useMemo, useState } from "react";
 import {
@@ -46,7 +45,7 @@ const SCORE_LINE_COLORS = [
 ];
 
 const tabs = ["Overview", "Schedule", "Students", "Assignments", "Payments", "Messages"];
-const money = (n) => `$${Number(n || 0).toLocaleString("en-US")}`;
+const money = (n) => `₦${Number(n || 0).toLocaleString("en-NG")}`;
 
 export default function TutorPage() {
   const [tab, setTab] = useState("Overview");

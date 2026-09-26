@@ -1,4 +1,3 @@
-"use client";
 
 import { useState } from "react";
 import { CalendarDays, FileUp, MessageCircle } from "lucide-react";

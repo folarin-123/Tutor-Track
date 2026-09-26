@@ -1,4 +1,3 @@
-"use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
@@ -12,7 +11,7 @@ function makeId(prefix) {
 const demoData = {
   students: [
     { id: "ST-demo-1", name: "Amara Okafor", grade: "SS2", status: "Active", note: "Preparing for WAEC mathematics." },
-    { id: "ST-demo-2", name: "Daniel Mensah", grade: "Year 11", status: "Active", note: "Focused on physics and exam technique." },
+    { id: "ST-demo-2", name: "Daniel Mensah", grade: "SS1", status: "Active", note: "Focused on physics and exam technique." },
     { id: "ST-demo-3", name: "Zainab Bello", grade: "SS3", status: "Active", note: "Targeting a distinction in biology." },
   ],
   sessions: [
@@ -32,9 +31,9 @@ const demoData = {
     { id: "A-demo-9", studentId: "ST-demo-3", studentName: "Zainab Bello", title: "Genetics practice paper", due: "2026-08-28", status: "Graded", score: 83 },
   ],
   payments: [
-    { id: "PY-demo-1", studentId: "ST-demo-1", studentName: "Amara Okafor", amount: 180, month: "September 2026", status: "Paid" },
-    { id: "PY-demo-2", studentId: "ST-demo-2", studentName: "Daniel Mensah", amount: 220, month: "September 2026", status: "Due" },
-    { id: "PY-demo-3", studentId: "ST-demo-3", studentName: "Zainab Bello", amount: 200, month: "September 2026", status: "Pending" },
+    { id: "PY-demo-1", studentId: "ST-demo-1", studentName: "Amara Okafor", amount: 45000, month: "September 2026", status: "Paid" },
+    { id: "PY-demo-2", studentId: "ST-demo-2", studentName: "Daniel Mensah", amount: 55000, month: "September 2026", status: "Due" },
+    { id: "PY-demo-3", studentId: "ST-demo-3", studentName: "Zainab Bello", amount: 50000, month: "September 2026", status: "Pending" },
   ],
   messages: [
     {
