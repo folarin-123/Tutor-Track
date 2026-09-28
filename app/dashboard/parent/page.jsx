@@ -1,6 +1,5 @@
-
 import { useMemo, useState } from "react";
-import { Bell, CalendarDays, CircleDollarSign } from "lucide-react";
+import { Bell, CalendarDays, CircleDollarSign, RefreshCw } from "lucide-react";
 import {
   CartesianGrid,
   Line,
@@ -11,14 +10,15 @@ import {
   YAxis,
 } from "recharts";
 import ScrollableTabs from "@/components/common/ScrollableTabs";
-import { EmptyState, Panel } from "@/components/common/Primitives";
-import MessagingPanel from "@/components/messaging/MessagingPanel";
+import { EmptyState, Panel, SecondaryButton } from "@/components/common/Primitives";
+import { SkeletonCard, SkeletonList } from "@/components/ui/Skeleton";
+import MessagingPanel from "@/src/features/messaging/components/MessagingPanel";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/lib/toast";
 import { useAuth } from "@/lib/auth";
+import { formatDate, formatNaira } from "@/src/lib/formatters";
 
 const tabs = ["Overview", "Assignments", "Payments", "Messages"];
-const money = (n) => `₦${Number(n || 0).toLocaleString("en-NG")}`;
 
 export default function ParentPage() {
   const [tab, setTab] = useState("Overview");
@@ -30,8 +30,8 @@ export default function ParentPage() {
     <section className="mx-auto max-w-5xl">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
         <div>
-          <p className="text-sm font-semibold text-primary-600">Learning update</p>
-          <h1 className="mt-1 text-3xl font-extrabold">
+          <p className="text-sm font-semibold text-primary-600 dark:text-primary-400">Learning update</p>
+          <h1 className="mt-1 text-3xl font-extrabold text-[var(--text-primary)]">
             {user ? `Hello, ${user.name}.` : "Hello."}
           </h1>
           <p className="mt-2 text-sm text-[var(--text-secondary)]">
@@ -40,7 +40,7 @@ export default function ParentPage() {
         </div>
         <button
           onClick={() => push("Notification preferences opened.")}
-          className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm font-bold"
+          className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm font-bold text-[var(--text-primary)] cursor-pointer hover:bg-[var(--bg-surface-muted)]"
         >
           <Bell size={16} />
           Alerts
@@ -61,6 +61,7 @@ function Overview({ store }) {
   const [studentId, setStudentId] = useState(store.students[0]?.id || "");
   const activeStudent =
     store.students.find((student) => student.id === studentId) || store.students[0];
+
   const scorePoints = useMemo(() => {
     if (!activeStudent) return [];
     return store.assignments
@@ -74,32 +75,42 @@ function Overview({ store }) {
       )
       .slice()
       .sort((a, b) => String(a.due).localeCompare(String(b.due)))
-      .map((item) => ({ due: item.due, score: Number(item.score) }));
+      .map((item) => ({ due: formatDate(item.due), score: Number(item.score) }));
   }, [store.assignments, activeStudent]);
 
   return (
     <div className="mt-6 space-y-5">
       <div className="grid gap-5 md:grid-cols-2">
-      <Card title="Upcoming session">
-        {store.sessions.length === 0 ? (
-          <EmptyState title="No sessions yet" body="Nothing scheduled yet." />
-        ) : (
-          <div className="rounded-3xl bg-primary-900 p-5 text-white">
-            <CalendarDays className="text-primary-300" />
-            <p className="mt-5 text-xs font-bold text-primary-200">
-              {store.sessions[0].date} · {store.sessions[0].start}
-            </p>
-            <p className="mt-2 text-xl font-extrabold">{store.sessions[0].topic}</p>
+        <Card title="Upcoming session">
+          {store.sessionsLoading ? (
+            <SkeletonCard />
+          ) : store.sessionsError ? (
+            <div className="text-center py-4 text-xs font-semibold text-danger-500">
+              {store.sessionsError}{" "}
+              <SecondaryButton onClick={store.fetchSessions} className="ml-2">
+                <RefreshCw size={12} className="inline mr-1" /> Retry
+              </SecondaryButton>
+            </div>
+          ) : store.sessions.length === 0 ? (
+            <EmptyState title="No sessions yet" body="Nothing scheduled yet." />
+          ) : (
+            <div className="rounded-3xl bg-primary-900 p-5 text-white">
+              <CalendarDays className="text-primary-300" />
+              <p className="mt-5 text-xs font-bold text-primary-200">
+                {formatDate(store.sessions[0].date)} · {store.sessions[0].start}
+              </p>
+              <p className="mt-2 text-xl font-extrabold">{store.sessions[0].topic}</p>
+            </div>
+          )}
+        </Card>
+        <Card title="At a glance">
+          <div className="grid grid-cols-2 gap-3">
+            <Kpi n={store.assignmentsLoading ? "..." : store.assignments.length} l="Assignments" />
+            <Kpi n={store.sessionsLoading ? "..." : store.sessions.length} l="Sessions" />
           </div>
-        )}
-      </Card>
-      <Card title="At a glance">
-        <div className="grid grid-cols-2 gap-3">
-          <Kpi n={store.assignments.length} l="Assignments" />
-          <Kpi n={store.sessions.length} l="Sessions" />
-        </div>
-      </Card>
+        </Card>
       </div>
+
       <Panel title={activeStudent ? `${activeStudent.name}'s progress` : "Progress"}>
         {store.students.length > 1 && (
           <div className="mb-4 flex items-center gap-2">
@@ -107,7 +118,7 @@ function Overview({ store }) {
             <select
               value={activeStudent?.id || ""}
               onChange={(event) => setStudentId(event.target.value)}
-              className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-semibold outline-primary-500"
+              className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] outline-primary-500"
             >
               {store.students.map((student) => (
                 <option key={student.id} value={student.id}>
@@ -117,7 +128,9 @@ function Overview({ store }) {
             </select>
           </div>
         )}
-        {scorePoints.length < 2 ? (
+        {store.assignmentsLoading ? (
+          <SkeletonCard />
+        ) : scorePoints.length < 2 ? (
           <EmptyState
             title="Not enough graded scores yet"
             body="A progress chart appears after at least two graded assignments."
@@ -150,7 +163,16 @@ function Assignments({ store }) {
   return (
     <div className="mt-6">
       <Card title="Assignment status">
-        {store.assignments.length === 0 ? (
+        {store.assignmentsLoading ? (
+          <SkeletonList count={3} />
+        ) : store.assignmentsError ? (
+          <div className="text-center py-4 text-xs font-semibold text-danger-500">
+            {store.assignmentsError}{" "}
+            <SecondaryButton onClick={store.fetchAssignments} className="ml-2">
+              <RefreshCw size={12} className="inline mr-1" /> Retry
+            </SecondaryButton>
+          </div>
+        ) : store.assignments.length === 0 ? (
           <EmptyState title="No assignments yet" body="Nothing assigned yet." />
         ) : (
           <div className="space-y-3">
@@ -159,9 +181,9 @@ function Assignments({ store }) {
                 key={assignment.id}
                 className="rounded-2xl bg-[var(--bg-surface-muted)] p-4"
               >
-                <p className="font-bold">{assignment.title}</p>
+                <p className="font-bold text-[var(--text-primary)]">{assignment.title}</p>
                 <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                  Due {assignment.due} · {assignment.status}
+                  Due {formatDate(assignment.due)} · {assignment.status}
                 </p>
               </div>
             ))}
@@ -176,31 +198,41 @@ function Payments({ store, push }) {
   const balance = store.payments
     .filter((item) => item.status !== "Paid")
     .reduce((sum, item) => sum + item.amount, 0);
+
   return (
     <div className="mt-6 grid gap-5 md:grid-cols-[1.1fr_.9fr]">
       <Card title="Payment status">
         <div className="rounded-3xl bg-primary-900 p-5 text-white">
           <CircleDollarSign className="text-primary-300" />
           <p className="mt-5 text-sm text-primary-100">Balance due</p>
-          <p className="mt-1 text-4xl font-extrabold">{money(balance)}</p>
+          <p className="mt-1 text-4xl font-extrabold">{formatNaira(balance)}</p>
           <button
             onClick={() => push("Payment flow would open here.")}
-            className="mt-5 rounded-full bg-primary-400 px-4 py-2.5 text-sm font-bold text-primary-900"
+            className="mt-5 rounded-full bg-primary-400 px-4 py-2.5 text-sm font-bold text-primary-900 cursor-pointer hover:bg-primary-300"
           >
             Pay securely
           </button>
         </div>
       </Card>
       <Card title="Payment history">
-        {store.payments.length === 0 ? (
+        {store.paymentsLoading ? (
+          <SkeletonList count={3} />
+        ) : store.paymentsError ? (
+          <div className="text-center py-4 text-xs font-semibold text-danger-500">
+            {store.paymentsError}{" "}
+            <SecondaryButton onClick={store.fetchPayments} className="ml-2">
+              <RefreshCw size={12} className="inline mr-1" /> Retry
+            </SecondaryButton>
+          </div>
+        ) : store.payments.length === 0 ? (
           <EmptyState title="No payments yet" body="Nothing recorded yet." />
         ) : (
           <div className="space-y-3">
             {store.payments.map((payment) => (
               <div key={payment.id} className="rounded-2xl bg-[var(--bg-surface-muted)] p-4">
-                <p className="font-bold">{payment.month}</p>
+                <p className="font-bold text-[var(--text-primary)]">{payment.month}</p>
                 <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                  {money(payment.amount)} · {payment.status}
+                  {formatNaira(payment.amount)} · {payment.status}
                 </p>
               </div>
             ))}
@@ -218,7 +250,7 @@ function Messages({ user }) {
 function Card({ title, children }) {
   return (
     <section className="rounded-3xl bg-[var(--bg-surface)] p-5 shadow-sm ring-1 ring-[var(--border-default)]">
-      <h2 className="mb-5 font-bold">{title}</h2>
+      <h2 className="mb-5 font-bold text-[var(--text-primary)]">{title}</h2>
       {children}
     </section>
   );
@@ -227,7 +259,7 @@ function Card({ title, children }) {
 function Kpi({ n, l }) {
   return (
     <div className="rounded-2xl bg-[var(--bg-surface-muted)] p-3 text-center">
-      <p className="text-xl font-extrabold">{n}</p>
+      <p className="text-xl font-extrabold text-[var(--text-primary)]">{n}</p>
       <p className="mt-1 text-[11px] text-[var(--text-secondary)]">{l}</p>
     </div>
   );

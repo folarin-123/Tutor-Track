@@ -1,5 +1,5 @@
 import { Search } from "lucide-react";
-import ConversationItem from "@/components/messaging/ConversationItem";
+import ConversationItem from "./ConversationItem";
 import { EmptyState } from "@/components/common/Primitives";
 
 export default function ConversationList({

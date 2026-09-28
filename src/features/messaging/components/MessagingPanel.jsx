@@ -1,8 +1,6 @@
-"use client";
-
 import { useEffect, useMemo, useState } from "react";
-import ConversationList from "@/components/messaging/ConversationList";
-import ChatWindow from "@/components/messaging/ChatWindow";
+import ConversationList from "./ConversationList";
+import ChatWindow from "./ChatWindow";
 import { Field, Modal, PrimaryButton, SecondaryButton } from "@/components/common/Primitives";
 import {
   getOrCreateConversation,
@@ -11,7 +9,7 @@ import {
   subscribeToConversations,
   subscribeToMessages,
   unreadForRole,
-} from "@/lib/messages";
+} from "../api";
 
 export default function MessagingPanel({
   role,

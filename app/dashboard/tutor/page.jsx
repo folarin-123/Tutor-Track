@@ -1,26 +1,21 @@
-
 import { useMemo, useState } from "react";
 import {
   CalendarDays,
   CircleDollarSign,
   ClipboardCheck,
   Plus,
-  ReceiptText,
+  RefreshCw,
   Users,
 } from "lucide-react";
 import ScrollableTabs from "@/components/common/ScrollableTabs";
 import {
-  Avatar,
   EmptyState,
-  Field,
-  Modal,
   Panel,
   PrimaryButton,
   SecondaryButton,
-  SelectField,
   Stat,
 } from "@/components/common/Primitives";
-import MessagingPanel from "@/components/messaging/MessagingPanel";
+import { SkeletonCard, SkeletonList } from "@/components/ui/Skeleton";
 import {
   CartesianGrid,
   Legend,
@@ -34,6 +29,22 @@ import {
 import { useStore } from "@/lib/store";
 import { useToast } from "@/lib/toast";
 import { useAuth } from "@/lib/auth";
+import { formatDate, formatNaira } from "@/src/lib/formatters";
+
+import StudentsView from "@/src/features/students/components/StudentsView";
+import AddStudentModal from "@/src/features/students/components/AddStudentModal";
+import StudentCard from "@/src/features/students/components/StudentCard";
+
+import ScheduleView from "@/src/features/scheduling/components/ScheduleView";
+import AddSessionModal from "@/src/features/scheduling/components/AddSessionModal";
+
+import AssignmentsView from "@/src/features/assignments/components/AssignmentsView";
+import AddAssignmentModal from "@/src/features/assignments/components/AddAssignmentModal";
+
+import PaymentsView from "@/src/features/payments/components/PaymentsView";
+import ReceiptModal from "@/src/features/payments/components/ReceiptModal";
+
+import MessagingPanel from "@/src/features/messaging/components/MessagingPanel";
 
 const SCORE_LINE_COLORS = [
   "var(--color-primary-500)",
@@ -43,7 +54,6 @@ const SCORE_LINE_COLORS = [
 ];
 
 const tabs = ["Overview", "Schedule", "Students", "Assignments", "Payments", "Messages"];
-const money = (n) => `₦${Number(n || 0).toLocaleString("en-NG")}`;
 
 export default function TutorPage() {
   const [tab, setTab] = useState("Overview");
@@ -67,21 +77,62 @@ export default function TutorPage() {
         dueGrading={dueGrading}
       />
     ),
-    Schedule: <Schedule store={store} push={push} />,
-    Students: <Students store={store} onAdd={() => setModal("student")} />,
-    Assignments: <Assignments store={store} push={push} />,
-    Payments: <Payments store={store} money={money} onReceipt={setReceipt} />,
-    Messages: <Messages store={store} user={user} />,
+    Schedule: (
+      <ScheduleView
+        sessions={store.sessions}
+        loading={store.sessionsLoading}
+        error={store.sessionsError}
+        push={push}
+        onRetry={store.fetchSessions}
+      />
+    ),
+    Students: (
+      <StudentsView
+        students={store.students}
+        loading={store.studentsLoading}
+        error={store.studentsError}
+        onAdd={() => setModal("student")}
+        onRetry={store.fetchStudents}
+      />
+    ),
+    Assignments: (
+      <AssignmentsView
+        assignments={store.assignments}
+        loading={store.assignmentsLoading}
+        error={store.assignmentsError}
+        onGrade={store.gradeAssignment}
+        push={push}
+        onRetry={store.fetchAssignments}
+      />
+    ),
+    Payments: (
+      <PaymentsView
+        payments={store.payments}
+        loading={store.paymentsLoading}
+        error={store.paymentsError}
+        onMarkPaid={store.markPaymentPaid}
+        onReceipt={setReceipt}
+        onRetry={store.fetchPayments}
+      />
+    ),
+    Messages: (
+      <MessagingPanel
+        role="tutor"
+        user={user}
+        roster={store.students}
+        onUpdateStudent={store.updateStudent}
+      />
+    ),
   }[tab];
 
   return (
     <section className="mx-auto max-w-7xl">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-primary-600">
+          <p className="text-sm font-semibold text-primary-600 dark:text-primary-400">
             {user ? `Welcome back, ${user.name}.` : "Welcome back."}
           </p>
-          <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">
+          <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl text-[var(--text-primary)]">
             Your practice at a glance.
           </h1>
           <p className="mt-2 text-sm text-[var(--text-secondary)]">
@@ -108,15 +159,29 @@ export default function TutorPage() {
       </div>
       {content}
       {modal === "student" && (
-        <AddStudentModal onClose={() => setModal(false)} store={store} push={push} />
+        <AddStudentModal
+          onClose={() => setModal(false)}
+          onAdd={store.addStudent}
+          push={push}
+        />
       )}
       {modal === "session" && (
-        <AddSessionModal onClose={() => setModal(false)} store={store} push={push} />
+        <AddSessionModal
+          onClose={() => setModal(false)}
+          students={store.students}
+          onAdd={store.addSession}
+          push={push}
+        />
       )}
       {modal === "assignment" && (
-        <AddAssignmentModal onClose={() => setModal(false)} store={store} push={push} />
+        <AddAssignmentModal
+          onClose={() => setModal(false)}
+          students={store.students}
+          onAdd={store.addAssignment}
+          push={push}
+        />
       )}
-      {receipt && <Receipt item={receipt} money={money} onClose={() => setReceipt(null)} />}
+      {receipt && <ReceiptModal item={receipt} onClose={() => setReceipt(null)} />}
     </section>
   );
 }
@@ -144,34 +209,37 @@ function Overview({ go, store, outstanding, dueGrading }) {
         <Stat
           icon={<CalendarDays size={18} />}
           label="Upcoming sessions"
-          value={store.sessions.length}
+          value={store.sessionsLoading ? "..." : store.sessions.length}
           detail={store.sessions[0] ? `Next: ${store.sessions[0].topic}` : "None scheduled yet"}
           tone="primary"
         />
         <Stat
           icon={<ClipboardCheck size={18} />}
           label="Ready to grade"
-          value={dueGrading}
+          value={store.assignmentsLoading ? "..." : dueGrading}
           detail={dueGrading ? "Needs your review" : "All caught up"}
           tone="warning"
         />
         <Stat
           icon={<CircleDollarSign size={18} />}
           label="Outstanding"
-          value={money(outstanding)}
+          value={store.paymentsLoading ? "..." : formatNaira(outstanding)}
           detail={`Across ${store.payments.filter((p) => p.status !== "Paid").length} families`}
           tone="danger"
         />
         <Stat
           icon={<Users size={18} />}
           label="Active students"
-          value={store.students.length}
+          value={store.studentsLoading ? "..." : store.students.length}
           detail={store.students.length ? "Growing your roster" : "Add your first student"}
           tone="primary"
         />
       </div>
+
       <Panel title="Student score trends">
-        {trend.data.length < 2 ? (
+        {store.assignmentsLoading ? (
+          <SkeletonCard />
+        ) : trend.data.length < 2 ? (
           <EmptyState
             title="Not enough graded scores yet"
             body="Grade at least two assignments so a trend can appear."
@@ -201,9 +269,17 @@ function Overview({ go, store, outstanding, dueGrading }) {
           </div>
         )}
       </Panel>
+
       <div className="grid gap-6 xl:grid-cols-[1.25fr_.75fr]">
         <Panel title="Upcoming sessions" action="Open schedule" onAction={() => go("Schedule")}>
-          {store.sessions.length === 0 ? (
+          {store.sessionsLoading ? (
+            <SkeletonList count={2} />
+          ) : store.sessionsError ? (
+            <div className="text-center py-4 text-xs font-semibold text-danger-500">
+              {store.sessionsError}{" "}
+              <button onClick={store.fetchSessions} className="underline">Retry</button>
+            </div>
+          ) : store.sessions.length === 0 ? (
             <EmptyState
               title="No sessions yet"
               body="Add a session to see it appear here."
@@ -221,16 +297,26 @@ function Overview({ go, store, outstanding, dueGrading }) {
                     {session.start}
                   </p>
                   <div className="flex-1">
-                    <p className="text-sm font-bold">{session.studentName}</p>
-                    <p className="mt-1 text-xs text-[var(--text-secondary)]">{session.topic}</p>
+                    <p className="text-sm font-bold text-[var(--text-primary)]">{session.studentName}</p>
+                    <p className="mt-1 text-xs text-[var(--text-secondary)]">
+                      {formatDate(session.date)} · {session.topic}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
           )}
         </Panel>
+
         <Panel title="Grading queue" action="View all" onAction={() => go("Assignments")}>
-          {store.assignments.length === 0 ? (
+          {store.assignmentsLoading ? (
+            <SkeletonList count={2} />
+          ) : store.assignmentsError ? (
+            <div className="text-center py-4 text-xs font-semibold text-danger-500">
+              {store.assignmentsError}{" "}
+              <button onClick={store.fetchAssignments} className="underline">Retry</button>
+            </div>
+          ) : store.assignments.length === 0 ? (
             <EmptyState title="Nothing to grade" body="New assignments will show up here." />
           ) : (
             <div className="space-y-3">
@@ -240,18 +326,30 @@ function Overview({ go, store, outstanding, dueGrading }) {
                   className="flex items-center justify-between rounded-2xl bg-[var(--bg-surface-muted)] p-3"
                 >
                   <div>
-                    <p className="text-sm font-bold">{task.title}</p>
+                    <p className="text-sm font-bold text-[var(--text-primary)]">{task.title}</p>
                     <p className="mt-1 text-xs text-[var(--text-secondary)]">{task.studentName}</p>
                   </div>
-                  <StatusBadge status={task.status} />
+                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${
+                    task.status === "Graded" ? "bg-success-100 text-success-700" : "bg-warning-100 text-warning-700"
+                  }`}>
+                    {task.status}
+                  </span>
                 </div>
               ))}
             </div>
           )}
         </Panel>
       </div>
+
       <Panel title="Your students" action="All students" onAction={() => go("Students")}>
-        {store.students.length === 0 ? (
+        {store.studentsLoading ? (
+          <SkeletonList count={3} />
+        ) : store.studentsError ? (
+          <div className="text-center py-4 text-xs font-semibold text-danger-500">
+            {store.studentsError}{" "}
+            <button onClick={store.fetchStudents} className="underline">Retry</button>
+          </div>
+        ) : store.students.length === 0 ? (
           <EmptyState
             title="No students yet"
             body="Add your first student to start building your roster."
@@ -267,284 +365,6 @@ function Overview({ go, store, outstanding, dueGrading }) {
         )}
       </Panel>
     </div>
-  );
-}
-
-function Schedule({ store, push }) {
-  return (
-    <div className="mt-7">
-      <Panel title="Sessions">
-        {store.sessions.length === 0 ? (
-          <EmptyState title="No sessions yet" body="Use the new session button above to add one." />
-        ) : (
-          <div className="space-y-3">
-            {store.sessions.map((session) => (
-              <button
-                type="button"
-                key={session.id}
-                onClick={() => push("Session opened. You can confirm or propose a new time.")}
-                className="flex w-full flex-col gap-1 rounded-2xl border border-[var(--border-default)] p-4 text-left"
-              >
-                <span className="text-xs font-bold text-primary-600">
-                  {session.date} · {session.start} to {session.end}
-                </span>
-                <span className="font-bold">{session.topic}</span>
-                <span className="text-sm text-[var(--text-secondary)]">
-                  {session.status} · {session.studentName}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-      </Panel>
-    </div>
-  );
-}
-
-function Students({ store, onAdd }) {
-  return (
-    <div className="mt-7">
-      <div className="rounded-3xl border border-dashed border-primary-300 bg-primary-50 p-5 text-primary-900">
-        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-          <div>
-            <p className="font-bold">Add a student</p>
-            <p className="mt-1 text-sm text-primary-700">
-              Build your roster so sessions, assignments, and payments can link to them.
-            </p>
-          </div>
-          <PrimaryButton onClick={onAdd}>
-            <Plus size={16} />
-            Add student
-          </PrimaryButton>
-        </div>
-      </div>
-      <div className="mt-5">
-        {store.students.length === 0 ? (
-          <EmptyState title="No students yet" body="Your roster is empty." />
-        ) : (
-          <div className="grid gap-4 lg:grid-cols-2">
-            {store.students.map((student) => (
-              <StudentCard key={student.id} student={student} full />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function Assignments({ store, push }) {
-  const [grading, setGrading] = useState(null);
-  const graded = store.assignments.filter((item) => item.status === "Graded").length;
-  const pending = store.assignments.length - graded;
-  return (
-    <div className="mt-7 space-y-5">
-      <div className="grid gap-4 md:grid-cols-2">
-        <Stat label="Pending review" value={pending} detail="Needs a grade" tone="warning" />
-        <Stat label="Graded" value={graded} detail="Keep it moving" tone="primary" />
-      </div>
-      <Panel title="Assignment tracker">
-        {store.assignments.length === 0 ? (
-          <EmptyState title="No assignments yet" body="Use the new assignment button above." />
-        ) : (
-          <div className="space-y-3">
-            {store.assignments.map((task) => (
-              <div
-                key={task.id}
-                className="flex flex-col gap-3 rounded-2xl border border-[var(--border-default)] p-4 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div>
-                  <p className="font-bold">{task.title}</p>
-                  <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                    {task.studentName} · Due {task.due}
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                  <StatusBadge status={task.status} />
-                  {task.status !== "Graded" && (
-                    <button
-                      type="button"
-                      onClick={() => setGrading(task)}
-                      className="rounded-full bg-primary-900 px-3 py-2 text-xs font-bold text-white"
-                    >
-                      Mark graded
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </Panel>
-      {grading && (
-        <GradeAssignmentModal
-          assignment={grading}
-          onClose={() => setGrading(null)}
-          onSave={(score) => {
-            store.gradeAssignment(grading.id, score);
-            push("Assignment marked as graded.");
-            setGrading(null);
-          }}
-        />
-      )}
-    </div>
-  );
-}
-
-function Payments({ store, money, onReceipt }) {
-  const outstanding = store.payments
-    .filter((item) => item.status !== "Paid")
-    .reduce((sum, item) => sum + item.amount, 0);
-  const collected = store.payments
-    .filter((item) => item.status === "Paid")
-    .reduce((sum, item) => sum + item.amount, 0);
-
-  return (
-    <div className="mt-7 space-y-6">
-      <div className="overflow-hidden rounded-[2rem] bg-primary-900 p-6 text-white sm:p-8">
-        <div className="grid gap-8 lg:grid-cols-2">
-          <div>
-            <p className="text-sm font-semibold text-primary-300">Payments overview</p>
-            <p className="mt-3 text-4xl font-extrabold sm:text-5xl">{money(outstanding)}</p>
-            <p className="mt-2 text-sm text-primary-100">Outstanding across your families</p>
-          </div>
-          <div className="rounded-3xl bg-white/10 p-5">
-            <p className="text-xs font-bold uppercase tracking-wider text-primary-100">
-              Collected
-            </p>
-            <p className="mt-3 text-3xl font-extrabold">{money(collected)}</p>
-          </div>
-        </div>
-      </div>
-      <Panel title="Balances">
-        {store.payments.length === 0 ? (
-          <EmptyState title="No payments yet" body="Add a payment record to track balances." />
-        ) : (
-          <div className="space-y-3">
-            {store.payments.map((payment) => (
-              <div
-                key={payment.id}
-                className="flex flex-col gap-3 rounded-2xl border border-[var(--border-default)] p-4 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <Avatar value={payment.studentName} />
-                  <div>
-                    <p className="font-bold">{payment.studentName}</p>
-                    <p className="mt-1 text-xs text-[var(--text-secondary)]">{payment.month}</p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap items-center justify-between gap-4 sm:justify-end">
-                  <div className="text-right">
-                    <p className="font-extrabold">{money(payment.amount)}</p>
-                    <StatusBadge status={payment.status} />
-                  </div>
-                  {payment.status !== "Paid" ? (
-                    <button
-                      onClick={() => store.markPaymentPaid(payment.id)}
-                      className="rounded-full bg-primary-500 px-3 py-2 text-xs font-bold text-white"
-                    >
-                      Mark paid
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => onReceipt(payment)}
-                      className="rounded-full border border-[var(--border-default)] px-3 py-2 text-xs font-bold"
-                    >
-                      Receipt
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </Panel>
-    </div>
-  );
-}
-
-function Messages({ store, user }) {
-  return (
-    <MessagingPanel
-      role="tutor"
-      user={user}
-      roster={store.students}
-      onUpdateStudent={store.updateStudent}
-    />
-  );
-}
-
-function StudentCard({ student, full }) {
-  return (
-    <div className="rounded-3xl bg-[var(--bg-surface)] p-5 shadow-sm ring-1 ring-[var(--border-default)]">
-      <div className="flex gap-3">
-        <Avatar value={student.name} />
-        <div>
-          <p className="font-bold">{student.name}</p>
-          <p className="text-xs text-[var(--text-secondary)]">{student.grade}</p>
-        </div>
-      </div>
-      {full && student.note && (
-        <p className="mt-4 text-xs leading-5 text-[var(--text-secondary)]">{student.note}</p>
-      )}
-    </div>
-  );
-}
-
-function StatusBadge({ status }) {
-  const tone = {
-    Paid: "bg-success-100 text-success-700",
-    Due: "bg-warning-100 text-warning-700",
-    Graded: "bg-success-100 text-success-700",
-    Draft: "bg-warning-100 text-warning-700",
-    "In Review": "bg-primary-100 text-primary-700",
-    Scheduled: "bg-primary-100 text-primary-700",
-  }[status] || "bg-[var(--bg-surface-muted)] text-[var(--text-secondary)]";
-  return (
-    <span className={`rounded-full px-3 py-1.5 text-xs font-bold ${tone}`}>{status}</span>
-  );
-}
-
-function GradeAssignmentModal({ assignment, onClose, onSave }) {
-  const [score, setScore] = useState("");
-  const [error, setError] = useState("");
-
-  const submit = () => {
-    const value = Number(score);
-    if (score === "" || !Number.isFinite(value) || value < 0 || value > 100) {
-      setError("Enter a number between 0 and 100.");
-      return;
-    }
-    onSave(value);
-  };
-
-  return (
-    <Modal title="Record a score" onClose={onClose}>
-      <p className="mb-4 text-sm text-[var(--text-secondary)]">
-        Grade {assignment.title} for {assignment.studentName}.
-      </p>
-      <Field
-        label="Score (0–100)"
-        type="number"
-        min="0"
-        max="100"
-        value={score}
-        onChange={(event) => {
-          setScore(event.target.value);
-          setError("");
-        }}
-        placeholder="78"
-      />
-      {error && <p className="mt-3 text-sm font-semibold text-danger-500">{error}</p>}
-      <div className="mt-5 flex gap-3">
-        <SecondaryButton className="flex-1" onClick={onClose}>
-          Cancel
-        </SecondaryButton>
-        <PrimaryButton className="flex-1" onClick={submit}>
-          Save grade
-        </PrimaryButton>
-      </div>
-    </Modal>
   );
 }
 
@@ -565,7 +385,7 @@ function buildStudentAverageTrend(students, assignments) {
       let sum = 0;
       const series = points.map((item, index) => {
         sum += Number(item.score);
-        return { due: item.due, average: Math.round((sum / (index + 1)) * 10) / 10 };
+        return { due: formatDate(item.due), average: Math.round((sum / (index + 1)) * 10) / 10 };
       });
       return { name: student.name, series };
     })
@@ -582,166 +402,4 @@ function buildStudentAverageTrend(students, assignments) {
   });
 
   return { data, lines: lines.map((line) => line.name) };
-}
-
-function AddStudentModal({ onClose, store, push }) {
-  const [name, setName] = useState("");
-  const [grade, setGrade] = useState("");
-  const [uid, setUid] = useState("");
-  const [parentUid, setParentUid] = useState("");
-
-  const submit = () => {
-    if (!name.trim()) return;
-    store.addStudent({
-      name: name.trim(),
-      grade: grade.trim(),
-      uid: uid.trim(),
-      parentUid: parentUid.trim(),
-    });
-    push(`${name.trim()} was added to your roster.`);
-    onClose();
-  };
-
-  return (
-    <Modal title="Add a student" onClose={onClose}>
-      <div className="space-y-4">
-        <Field label="Student name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" />
-        <Field label="Grade or level" value={grade} onChange={(e) => setGrade(e.target.value)} placeholder="Grade 8" />
-        <Field
-          label="Student account ID (optional)"
-          value={uid}
-          onChange={(e) => setUid(e.target.value)}
-          placeholder="From the student's TutorTrack header"
-        />
-        <Field
-          label="Parent account ID (optional)"
-          value={parentUid}
-          onChange={(e) => setParentUid(e.target.value)}
-          placeholder="From the parent's TutorTrack header"
-        />
-      </div>
-      <PrimaryButton className="mt-5 w-full" onClick={submit}>
-        Save
-      </PrimaryButton>
-    </Modal>
-  );
-}
-
-function AddSessionModal({ onClose, store, push }) {
-  const [studentId, setStudentId] = useState("");
-  const [topic, setTopic] = useState("");
-  const [date, setDate] = useState("");
-  const [start, setStart] = useState("");
-  const [end, setEnd] = useState("");
-
-  const studentOptions = useMemo(
-    () => ["Unassigned", ...store.students.map((s) => s.name)],
-    [store.students],
-  );
-
-  const submit = () => {
-    if (!topic.trim() || !date || !start || !end) return;
-    const student = store.students.find((s) => s.name === studentId);
-    store.addSession({
-      studentId: student?.id,
-      studentName: studentId || "Unassigned",
-      topic: topic.trim(),
-      date,
-      start,
-      end,
-    });
-    push("Session added to your schedule.");
-    onClose();
-  };
-
-  return (
-    <Modal title="Add a session" onClose={onClose}>
-      <div className="space-y-4">
-        <SelectField
-          label="Student"
-          value={studentId}
-          onChange={(e) => setStudentId(e.target.value)}
-          options={studentOptions}
-        />
-        <Field label="Topic" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Mathematics, fractions" />
-        <Field label="Date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Start" type="time" value={start} onChange={(e) => setStart(e.target.value)} />
-          <Field label="End" type="time" value={end} onChange={(e) => setEnd(e.target.value)} />
-        </div>
-      </div>
-      <PrimaryButton className="mt-5 w-full" onClick={submit}>
-        Save
-      </PrimaryButton>
-    </Modal>
-  );
-}
-
-function AddAssignmentModal({ onClose, store, push }) {
-  const [studentId, setStudentId] = useState("");
-  const [title, setTitle] = useState("");
-  const [due, setDue] = useState("");
-
-  const studentOptions = useMemo(
-    () => ["Unassigned", ...store.students.map((s) => s.name)],
-    [store.students],
-  );
-
-  const submit = () => {
-    if (!title.trim() || !due) return;
-    const student = store.students.find((s) => s.name === studentId);
-    store.addAssignment({
-      studentId: student?.id,
-      studentName: studentId || "Unassigned",
-      title: title.trim(),
-      due,
-    });
-    push("Assignment added.");
-    onClose();
-  };
-
-  return (
-    <Modal title="Add an assignment" onClose={onClose}>
-      <div className="space-y-4">
-        <SelectField
-          label="Student"
-          value={studentId}
-          onChange={(e) => setStudentId(e.target.value)}
-          options={studentOptions}
-        />
-        <Field label="Title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Reading reflection" />
-        <Field label="Due date" type="date" value={due} onChange={(e) => setDue(e.target.value)} />
-      </div>
-      <PrimaryButton className="mt-5 w-full" onClick={submit}>
-        Save
-      </PrimaryButton>
-    </Modal>
-  );
-}
-
-function Receipt({ item, money, onClose }) {
-  return (
-    <Modal title="Payment receipt" onClose={onClose}>
-      <div className="rounded-3xl bg-primary-900 p-5 text-white">
-        <div className="flex items-center justify-between">
-          <span className="grid h-10 w-10 place-items-center rounded-full bg-primary-400 text-primary-900">
-            <ReceiptText size={18} />
-          </span>
-          <span className="rounded-full bg-primary-400/20 px-3 py-1 text-xs font-bold text-primary-100">
-            PAID
-          </span>
-        </div>
-        <p className="mt-7 text-sm text-primary-200">Received from</p>
-        <p className="text-xl font-extrabold">{item.studentName}</p>
-        <p className="mt-6 text-3xl font-extrabold">{money(item.amount)}</p>
-        <div className="mt-6 border-t border-white/15 pt-4 text-sm text-primary-200">
-          <p>{item.month} tuition, TutorTrack receipt</p>
-          <p className="mt-1">Ref: TT-{item.id}</p>
-        </div>
-      </div>
-      <PrimaryButton className="mt-4 w-full" onClick={onClose}>
-        Done
-      </PrimaryButton>
-    </Modal>
-  );
 }

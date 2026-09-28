@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowLeft } from "lucide-react";
 import { Avatar, EmptyState } from "@/components/common/Primitives";
-import MessageBubble from "@/components/messaging/MessageBubble";
-import MessageComposer from "@/components/messaging/MessageComposer";
+import MessageBubble from "./MessageBubble";
+import MessageComposer from "./MessageComposer";
 
 export default function ChatWindow({
   title,
