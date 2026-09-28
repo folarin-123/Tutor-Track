@@ -9,6 +9,7 @@ import {
   CheckSquare,
   ClipboardCheck,
   Clock,
+  FileText,
   GraduationCap,
   LineChart,
   Mail,

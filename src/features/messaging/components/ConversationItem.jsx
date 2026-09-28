@@ -1,5 +1,5 @@
 import { Avatar, formatRelativeTime } from "@/components/common/Primitives";
-import UnreadBadge from "@/components/messaging/UnreadBadge";
+import UnreadBadge from "./UnreadBadge";
 
 export default function ConversationItem({
   title,
