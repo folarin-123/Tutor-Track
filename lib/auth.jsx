@@ -37,17 +37,6 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (!firebaseUser) {
-        // Fallback for demo/dev mode when Firebase backend is unconfigured or blocked
-        try {
-          const localAuth = window.localStorage.getItem("tutortrack-auth-demo");
-          if (localAuth) {
-            setUser(JSON.parse(localAuth));
-            setLoading(false);
-            return;
-          }
-        } catch {
-          // ignore
-        }
         setUser(null);
         setLoading(false);
         return;
@@ -66,49 +55,22 @@ export function AuthProvider({ children }) {
   }, []);
 
   const signUp = async ({ email, password, name, role, cv }) => {
-    try {
-      const { user: firebaseUser } = await createUserWithEmailAndPassword(auth, email, password);
-      const trimmedName = typeof name === "string" ? name.trim() : "";
-      if (trimmedName) {
-        await updateProfile(firebaseUser, { displayName: trimmedName });
-      }
-      try {
-        await setDoc(doc(db, "users", firebaseUser.uid), {
-          name: trimmedName,
-          role,
-          cv: cv || null,
-        });
-      } catch {
-        // Firestore permission error in local/demo mode
-      }
-    } catch (err) {
-      // Demo mode fallback if Firebase is unreachable or fails in sandbox
-      const demoUser = {
-        uid: `demo-${role}-${Date.now()}`,
-        email,
-        name: name || `${role} user`,
-        role,
-        cv: cv || null,
-      };
-      window.localStorage.setItem("tutortrack-auth-demo", JSON.stringify(demoUser));
-      setUser(demoUser);
+    const { user: firebaseUser } = await createUserWithEmailAndPassword(auth, email, password);
+    const trimmedName = typeof name === "string" ? name.trim() : "";
+    if (trimmedName) {
+      await updateProfile(firebaseUser, { displayName: trimmedName });
     }
+    await setDoc(doc(db, "users", firebaseUser.uid), {
+      name: trimmedName,
+      role,
+      cv: cv || null,
+    });
+    // onAuthStateChanged will pick this up and populate `user` automatically.
   };
 
   const signIn = async ({ email, password }) => {
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch (err) {
-      // Demo mode fallback
-      const demoUser = {
-        uid: "demo-tutor-123",
-        email,
-        name: "Demo User",
-        role: "tutor",
-      };
-      window.localStorage.setItem("tutortrack-auth-demo", JSON.stringify(demoUser));
-      setUser(demoUser);
-    }
+    await signInWithEmailAndPassword(auth, email, password);
+    // onAuthStateChanged will pick this up and populate `user` automatically.
   };
 
   const resetPassword = async (email) => {

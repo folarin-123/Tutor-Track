@@ -4,14 +4,10 @@ import {
   ArrowRight,
   BookOpen,
   Calendar,
-  CalendarDays,
   CheckCircle2,
   CheckSquare,
-  ClipboardCheck,
   Clock,
-  FileText,
   GraduationCap,
-  LineChart,
   Mail,
   Menu,
   MessageCircle,
@@ -21,7 +17,6 @@ import {
   Sun,
   TrendingUp,
   Users,
-  Wallet,
   X,
 } from "lucide-react";
 import { useTheme } from "@/lib/theme";
