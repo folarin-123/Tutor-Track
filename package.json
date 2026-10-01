@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check:readme": "node scripts/check-readme.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",
