@@ -2,7 +2,7 @@ import {
   addStudent as apiAddStudent,
   listStudents as apiListStudents,
   updateStudent as apiUpdateStudent,
-} from "@/src/lib/api";
+} from "@/lib/api";
 
 export async function listStudents() {
   return apiListStudents();

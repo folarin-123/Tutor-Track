@@ -3,11 +3,11 @@ import { CalendarDays, FileUp, MessageCircle, RefreshCw } from "lucide-react";
 import ScrollableTabs from "@/components/common/ScrollableTabs";
 import { EmptyState, SecondaryButton } from "@/components/common/Primitives";
 import { SkeletonCard, SkeletonList } from "@/components/ui/Skeleton";
-import MessagingPanel from "@/src/features/messaging/components/MessagingPanel";
+import MessagingPanel from "@/features/messaging/components/MessagingPanel";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/lib/toast";
 import { useAuth } from "@/lib/auth";
-import { formatDate } from "@/src/lib/formatters";
+import { formatDate } from "@/lib/formatters";
 
 const tabs = ["My plan", "Assignments", "Messages"];
 

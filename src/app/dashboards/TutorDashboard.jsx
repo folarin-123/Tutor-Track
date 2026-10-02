@@ -29,22 +29,22 @@ import {
 import { useStore } from "@/lib/store";
 import { useToast } from "@/lib/toast";
 import { useAuth } from "@/lib/auth";
-import { formatDate, formatNaira } from "@/src/lib/formatters";
+import { formatDate, formatNaira } from "@/lib/formatters";
 
-import StudentsView from "@/src/features/students/components/StudentsView";
-import AddStudentModal from "@/src/features/students/components/AddStudentModal";
-import StudentCard from "@/src/features/students/components/StudentCard";
+import StudentsView from "@/features/students/components/StudentsView";
+import AddStudentModal from "@/features/students/components/AddStudentModal";
+import StudentCard from "@/features/students/components/StudentCard";
 
-import ScheduleView from "@/src/features/scheduling/components/ScheduleView";
-import AddSessionModal from "@/src/features/scheduling/components/AddSessionModal";
+import ScheduleView from "@/features/scheduling/components/ScheduleView";
+import AddSessionModal from "@/features/scheduling/components/AddSessionModal";
 
-import AssignmentsView from "@/src/features/assignments/components/AssignmentsView";
-import AddAssignmentModal from "@/src/features/assignments/components/AddAssignmentModal";
+import AssignmentsView from "@/features/assignments/components/AssignmentsView";
+import AddAssignmentModal from "@/features/assignments/components/AddAssignmentModal";
 
-import PaymentsView from "@/src/features/payments/components/PaymentsView";
-import ReceiptModal from "@/src/features/payments/components/ReceiptModal";
+import PaymentsView from "@/features/payments/components/PaymentsView";
+import ReceiptModal from "@/features/payments/components/ReceiptModal";
 
-import MessagingPanel from "@/src/features/messaging/components/MessagingPanel";
+import MessagingPanel from "@/features/messaging/components/MessagingPanel";
 
 const SCORE_LINE_COLORS = [
   "var(--color-primary-500)",

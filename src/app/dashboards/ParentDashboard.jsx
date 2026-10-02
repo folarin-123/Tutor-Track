@@ -12,11 +12,11 @@ import {
 import ScrollableTabs from "@/components/common/ScrollableTabs";
 import { EmptyState, Panel, SecondaryButton } from "@/components/common/Primitives";
 import { SkeletonCard, SkeletonList } from "@/components/ui/Skeleton";
-import MessagingPanel from "@/src/features/messaging/components/MessagingPanel";
+import MessagingPanel from "@/features/messaging/components/MessagingPanel";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/lib/toast";
 import { useAuth } from "@/lib/auth";
-import { formatDate, formatNaira } from "@/src/lib/formatters";
+import { formatDate, formatNaira } from "@/lib/formatters";
 
 const tabs = ["Overview", "Assignments", "Payments", "Messages"];
 

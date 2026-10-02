@@ -5,7 +5,7 @@ import {
   sendMessage as apiSendMessage,
   subscribeToConversations as apiSubscribeToConversations,
   subscribeToMessages as apiSubscribeToMessages,
-} from "@/src/lib/api";
+} from "@/lib/api";
 
 export async function listThreads() {
   return apiListThreads();

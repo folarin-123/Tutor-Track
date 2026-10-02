@@ -2,7 +2,7 @@ import {
   addAssignment as apiAddAssignment,
   gradeAssignment as apiGradeAssignment,
   listAssignments as apiListAssignments,
-} from "@/src/lib/api";
+} from "@/lib/api";
 
 export async function listAssignments() {
   return apiListAssignments();

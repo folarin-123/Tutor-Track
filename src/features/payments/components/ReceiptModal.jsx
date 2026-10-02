@@ -1,6 +1,6 @@
 import { ReceiptText } from "lucide-react";
 import { Modal, PrimaryButton } from "@/components/common/Primitives";
-import { formatNaira } from "@/src/lib/formatters";
+import { formatNaira } from "@/lib/formatters";
 
 export default function ReceiptModal({ item, onClose }) {
   return (

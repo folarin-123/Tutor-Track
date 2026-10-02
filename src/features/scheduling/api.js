@@ -1,7 +1,7 @@
 import {
   addSession as apiAddSession,
   listSessions as apiListSessions,
-} from "@/src/lib/api";
+} from "@/lib/api";
 
 export async function listSessions() {
   return apiListSessions();

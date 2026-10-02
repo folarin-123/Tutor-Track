@@ -2,7 +2,7 @@ import { useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { EmptyState, Panel, SecondaryButton, Stat } from "@/components/common/Primitives";
 import { SkeletonList } from "@/components/ui/Skeleton";
-import { formatDate } from "@/src/lib/formatters";
+import { formatDate } from "@/lib/formatters";
 import GradeAssignmentModal from "./GradeAssignmentModal";
 
 function StatusBadge({ status }) {

@@ -14,7 +14,7 @@ import {
   markPaymentPaid as apiMarkPaymentPaid,
   sendMessage as apiSendMessage,
   updateStudent as apiUpdateStudent,
-} from "@/src/lib/api";
+} from "@/lib/api";
 
 const StoreContext = createContext(null);
 

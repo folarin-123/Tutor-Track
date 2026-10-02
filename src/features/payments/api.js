@@ -2,7 +2,7 @@ import {
   addPayment as apiAddPayment,
   listInvoices as apiListInvoices,
   markPaymentPaid as apiMarkPaymentPaid,
-} from "@/src/lib/api";
+} from "@/lib/api";
 
 export async function listInvoices() {
   return apiListInvoices();

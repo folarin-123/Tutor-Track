@@ -1,7 +1,7 @@
 import { RefreshCw } from "lucide-react";
 import { Avatar, EmptyState, Panel, SecondaryButton } from "@/components/common/Primitives";
 import { SkeletonList } from "@/components/ui/Skeleton";
-import { formatNaira } from "@/src/lib/formatters";
+import { formatNaira } from "@/lib/formatters";
 
 function StatusBadge({ status }) {
   const tone = {

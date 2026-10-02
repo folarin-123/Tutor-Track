@@ -1,7 +1,7 @@
 import { RefreshCw } from "lucide-react";
 import { EmptyState, Panel, SecondaryButton } from "@/components/common/Primitives";
 import { SkeletonList } from "@/components/ui/Skeleton";
-import { formatDate } from "@/src/lib/formatters";
+import { formatDate } from "@/lib/formatters";
 
 export default function ScheduleView({
   sessions = [],
