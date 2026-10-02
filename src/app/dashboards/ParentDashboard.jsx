@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Bell, CalendarDays, CircleDollarSign, RefreshCw } from "lucide-react";
+import { Bell, CalendarDays, RefreshCw, Wallet } from "lucide-react";
 import {
   CartesianGrid,
   Line,
@@ -203,7 +203,7 @@ function Payments({ store, push }) {
     <div className="mt-6 grid gap-5 md:grid-cols-[1.1fr_.9fr]">
       <Card title="Payment status">
         <div className="rounded-3xl bg-primary-900 p-5 text-white">
-          <CircleDollarSign className="text-primary-300" />
+          <Wallet className="text-primary-300" />
           <p className="mt-5 text-sm text-primary-100">Balance due</p>
           <p className="mt-1 text-4xl font-extrabold">{formatNaira(balance)}</p>
           <button

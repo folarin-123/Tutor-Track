@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { GraduationCap, BookOpen, Users, LayoutDashboard, Calendar, FileText, DollarSign, MessageSquare } from "lucide-react";
+import { GraduationCap, BookOpen, Users, LayoutDashboard, Calendar, FileText, Wallet, MessageSquare } from "lucide-react";
 
 export function MobileBottomNav({ role }) {
   const { pathname } = useLocation();
@@ -10,7 +10,7 @@ export function MobileBottomNav({ role }) {
       { label: "Tutor", icon: GraduationCap, to: "/tutor" },
       { label: "Schedule", icon: Calendar, to: "/tutor?tab=Schedule" },
       { label: "Tasks", icon: FileText, to: "/tutor?tab=Assignments" },
-      { label: "Payments", icon: DollarSign, to: "/tutor?tab=Payments" },
+      { label: "Payments", icon: Wallet, to: "/tutor?tab=Payments" },
       { label: "Messages", icon: MessageSquare, to: "/tutor?tab=Messages" },
     ],
     student: [
@@ -20,7 +20,7 @@ export function MobileBottomNav({ role }) {
     ],
     parent: [
       { label: "Parent", icon: Users, to: "/parent" },
-      { label: "Payments", icon: DollarSign, to: "/parent?tab=Payments" },
+      { label: "Payments", icon: Wallet, to: "/parent?tab=Payments" },
       { label: "Messages", icon: MessageSquare, to: "/parent?tab=Messages" },
     ],
   };

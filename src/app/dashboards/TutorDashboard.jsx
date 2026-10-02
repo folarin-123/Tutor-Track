@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
 import {
   CalendarDays,
-  CircleDollarSign,
   ClipboardCheck,
   Plus,
   RefreshCw,
   Users,
+  Wallet,
 } from "lucide-react";
 import ScrollableTabs from "@/components/common/ScrollableTabs";
 import {
@@ -221,7 +221,7 @@ function Overview({ go, store, outstanding, dueGrading }) {
           tone="warning"
         />
         <Stat
-          icon={<CircleDollarSign size={18} />}
+          icon={<Wallet size={18} />}
           label="Outstanding"
           value={store.paymentsLoading ? "..." : formatNaira(outstanding)}
           detail={`Across ${store.payments.filter((p) => p.status !== "Paid").length} families`}
